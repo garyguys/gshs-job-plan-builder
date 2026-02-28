@@ -2,9 +2,8 @@ name: Supabase Keep-Alive
 
 on:
   schedule:
-    # Run every 5 days at 8am UTC to prevent free-tier pausing
     - cron: '0 8 */5 * *'
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   ping:
@@ -12,9 +11,10 @@ jobs:
     steps:
       - name: Ping Supabase database
         run: |
-          curl -s -o /dev/null -w "%{http_code}" \
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             "${{ secrets.SUPABASE_URL }}/rest/v1/consultations?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
-          echo ""
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
+          echo "HTTP Status: $STATUS"
           echo "Ping sent to keep Supabase project alive."
+          if [ "$STATUS" -ge 400 ]; then exit 1; fi

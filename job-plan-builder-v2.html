@@ -821,6 +821,9 @@
     <div class="auth-toggle" id="authToggle">
       Don't have an account? <a onclick="toggleAuthMode()">Sign Up</a>
     </div>
+    <div class="auth-toggle" style="margin-top:8px">
+      <a onclick="document.getElementById('authScreen').classList.add('hidden');initApp()">Skip — use offline</a>
+    </div>
   </div>
 </div>
 
@@ -1225,7 +1228,17 @@
   // ─── Supabase Init ─────────────────────────────────────────
   const SUPABASE_URL = 'https://lpofskxcdcyucyfkaqqf.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_6Va0sk7JZiThCn9jlhoA-g_XXPK7Pns';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let sb = null;
+  try {
+    const { createClient } = window.supabase || {};
+    if (createClient) {
+      sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else {
+      console.warn('Supabase JS library not loaded — running in offline mode.');
+    }
+  } catch (e) {
+    console.warn('Supabase init failed:', e);
+  }
 
   // ─── Auth ──────────────────────────────────────────────────
   let authMode = 'signin'; // 'signin' or 'signup'
@@ -1259,24 +1272,39 @@
     document.getElementById('authSubmit').textContent = 'Loading...';
     document.getElementById('authSubmit').disabled = true;
 
+    if (!sb) {
+      // Supabase not loaded — skip auth, go offline
+      document.getElementById('authScreen').classList.add('hidden');
+      initApp();
+      return;
+    }
+
     try {
       let result;
       if (authMode === 'signup') {
-        result = await supabase.auth.signUp({ email, password });
+        result = await sb.auth.signUp({ email, password });
       } else {
-        result = await supabase.auth.signInWithPassword({ email, password });
+        result = await sb.auth.signInWithPassword({ email, password });
       }
 
       if (result.error) {
         errEl.textContent = result.error.message;
         errEl.classList.add('visible');
+      } else if (authMode === 'signup' && result.data.user && !result.data.session) {
+        // Email confirmation required
+        errEl.textContent = 'Check your email for a confirmation link, then sign in.';
+        errEl.classList.add('visible');
+        authMode = 'signin';
+        document.getElementById('authSubmit').textContent = 'Sign In';
+        document.getElementById('authToggle').innerHTML = 'Don\'t have an account? <a onclick="toggleAuthMode()">Sign Up</a>';
       } else {
         document.getElementById('authScreen').classList.add('hidden');
         initApp();
       }
     } catch (e) {
-      errEl.textContent = 'Connection error. The app will work offline.';
+      errEl.textContent = 'Connection error. Try again or use offline.';
       errEl.classList.add('visible');
+      console.error('Auth error:', e);
     }
 
     document.getElementById('authSubmit').textContent = authMode === 'signin' ? 'Sign In' : 'Sign Up';
@@ -1290,8 +1318,14 @@
 
   // Check for existing session on load
   async function checkSession() {
+    if (!sb) {
+      // Supabase not available — go straight to app in offline mode
+      document.getElementById('authScreen').classList.add('hidden');
+      initApp();
+      return;
+    }
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       if (session) {
         document.getElementById('authScreen').classList.add('hidden');
         initApp();
@@ -1316,12 +1350,12 @@
   }
 
   async function syncToCloud(consultationId, clientName, address, stateJson) {
-    if (!syncEnabled) return;
+    if (!syncEnabled || !sb) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       if (!session) return;
 
-      const { error } = await supabase.from('consultations').upsert({
+      const { error } = await sb.from('consultations').upsert({
         id: consultationId,
         user_id: session.user.id,
         client_name: clientName,
@@ -1338,18 +1372,18 @@
   }
 
   async function deleteFromCloud(consultationId) {
-    if (!syncEnabled) return;
+    if (!syncEnabled || !sb) return;
     try {
-      await supabase.from('consultations').delete().eq('id', consultationId);
+      await sb.from('consultations').delete().eq('id', consultationId);
     } catch (e) {
       console.warn('Cloud delete failed:', e);
     }
   }
 
   async function pullFromCloud() {
-    if (!syncEnabled) return;
+    if (!syncEnabled || !sb) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       if (!session) return;
 
       const { data: cloudRows, error } = await supabase
@@ -1418,11 +1452,13 @@
   // ─── App Init ──────────────────────────────────────────────
   async function initApp() {
     // Enable sync if we have a session
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      syncEnabled = !!session;
-    } catch (e) {
-      syncEnabled = false;
+    if (sb) {
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        syncEnabled = !!session;
+      } catch (e) {
+        syncEnabled = false;
+      }
     }
 
     // Load local state first (instant)

@@ -76,21 +76,22 @@
   }
 
   .new-btn {
-    padding: 6px 14px;
+    padding: 10px 16px;
     background: var(--accent-light);
     color: var(--accent);
     border: none;
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     font-family: 'DM Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Step Nav */
   .step-nav {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     padding: 12px 20px;
     background: var(--warm-white);
     border-bottom: 1px solid var(--border-light);
@@ -101,9 +102,9 @@
 
   .step-pill {
     flex-shrink: 0;
-    padding: 6px 14px;
+    padding: 10px 18px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-light);
     background: var(--border-light);
@@ -111,6 +112,7 @@
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
   }
   .step-pill.active { background: var(--sage); color: white; }
   .step-pill.completed { background: var(--sage-light); color: var(--sage-dark); }
@@ -185,11 +187,11 @@
   input[type="text"], input[type="email"], input[type="tel"],
   input[type="number"], input[type="date"], textarea, select {
     width: 100%;
-    padding: 12px 14px;
+    padding: 14px 16px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text);
     background: var(--warm-white);
     transition: border-color 0.2s;
@@ -218,16 +220,17 @@
   .toggle-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 11px 14px;
+    gap: 12px;
+    padding: 14px 16px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     margin-bottom: 8px;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .toggle-item:last-child { margin-bottom: 0; }
@@ -239,8 +242,8 @@
   }
 
   .toggle-item .check {
-    width: 20px; height: 20px;
-    border-radius: 4px;
+    width: 24px; height: 24px;
+    border-radius: 6px;
     border: 2px solid var(--border);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -268,14 +271,15 @@
   .volume-selector { display: flex; gap: 8px; }
 
   .volume-btn {
-    flex: 1; padding: 10px;
+    flex: 1; padding: 14px 10px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     background: var(--warm-white);
     cursor: pointer; text-align: center;
-    font-size: 13px; font-weight: 500;
+    font-size: 14px; font-weight: 500;
     font-family: 'DM Sans', sans-serif;
     transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .volume-btn.selected {
@@ -296,7 +300,8 @@
 
   .room-card-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px; cursor: pointer; user-select: none;
+    padding: 16px 18px; cursor: pointer; user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .room-card-header:active { background: var(--border-light); }
@@ -304,10 +309,10 @@
   .room-card-left { display: flex; align-items: center; gap: 10px; }
 
   .room-icon {
-    width: 36px; height: 36px; border-radius: 8px;
+    width: 42px; height: 42px; border-radius: 10px;
     background: var(--sage-light);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .room-name { font-weight: 600; font-size: 15px; }
@@ -331,32 +336,34 @@
   }
 
   .delete-btn {
-    padding: 4px 10px; border: none;
+    padding: 8px 14px; border: none;
     background: var(--red-light); color: var(--red);
-    border-radius: 6px; font-size: 12px; font-weight: 600;
+    border-radius: 6px; font-size: 13px; font-weight: 600;
     cursor: pointer; font-family: 'DM Sans', sans-serif;
     margin-right: 8px;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .add-room-area {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
-    padding: 16px; text-align: center;
+    padding: 20px; text-align: center;
     margin-bottom: 16px;
   }
 
   .add-room-area select {
-    max-width: 250px; margin: 0 auto 10px; display: block;
+    max-width: 300px; margin: 0 auto 12px; display: block;
   }
 
   /* Buttons */
   .btn {
     display: inline-flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 12px 20px;
+    gap: 6px; padding: 14px 22px;
     border-radius: var(--radius-sm);
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 600;
+    font-size: 15px; font-weight: 600;
     border: none; cursor: pointer; transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .btn-primary { background: var(--sage); color: white; }
@@ -369,7 +376,7 @@
   .btn-blue:active { background: #4A6AAE; }
   .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
   .btn-block { width: 100%; }
-  .btn-sm { padding: 8px 14px; font-size: 13px; }
+  .btn-sm { padding: 10px 16px; font-size: 14px; }
 
   /* Phase Cards */
   .phase-card {
@@ -437,13 +444,14 @@
   }
 
   .tab-btn {
-    flex: 1; padding: 10px;
+    flex: 1; padding: 12px;
     border: none; border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 600;
+    font-size: 14px; font-weight: 600;
     color: var(--text-light);
     background: transparent;
     cursor: pointer; transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .tab-btn.active {
@@ -476,13 +484,14 @@
     position: fixed; bottom: 0; left: 0; right: 0;
     background: var(--warm-white);
     border-top: 1px solid var(--border);
-    padding: 12px 20px;
+    padding: 14px 20px;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
     display: flex; gap: 10px; justify-content: space-between;
     z-index: 100;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
   }
 
-  .bottom-bar .btn { flex: 1; }
+  .bottom-bar .btn { flex: 1; min-height: 48px; }
 
   .toast {
     position: fixed; bottom: 80px; left: 50%;
@@ -558,12 +567,13 @@
 
   .saved-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px;
+    padding: 16px 18px;
     border: 1.5px solid var(--border-light);
     border-radius: var(--radius-sm);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     cursor: pointer;
     transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
   .saved-item:active { background: var(--sage-light); border-color: var(--sage); }
   .saved-item.current { border-color: var(--sage); background: var(--sage-light); }
@@ -575,10 +585,11 @@
   .saved-item-actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 12px; }
 
   .saved-item-delete {
-    padding: 5px 10px; border: none;
+    padding: 8px 14px; border: none;
     background: var(--red-light); color: var(--red);
-    border-radius: 6px; font-size: 12px; font-weight: 600;
+    border-radius: 6px; font-size: 13px; font-weight: 600;
     cursor: pointer; font-family: 'DM Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .saved-empty {
@@ -642,16 +653,17 @@
   .sync-indicator.visible { opacity: 1; }
 
   /* Room disposition */
-  .disposition-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+  .disposition-selector { display: flex; gap: 8px; flex-wrap: wrap; }
   .disposition-btn {
-    padding: 7px 12px;
+    padding: 12px 16px;
     border: 1.5px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--warm-white);
     cursor: pointer;
-    font-size: 13px; font-weight: 500;
+    font-size: 14px; font-weight: 500;
     font-family: 'DM Sans', sans-serif;
     transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
   .disposition-btn.selected {
     border-color: var(--sage);
@@ -793,11 +805,12 @@
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .service-grid { grid-template-columns: 1fr; }
     .inline-fields { flex-direction: column; gap: 0; }
-    .disposition-selector { gap: 4px; }
-    .disposition-btn { padding: 6px 10px; font-size: 12px; }
+    .disposition-selector { gap: 6px; }
+    .disposition-btn { padding: 10px 14px; font-size: 13px; }
     .sketch-toolbar { gap: 4px; padding: 8px; }
-    .sketch-tool { width: 40px; height: 40px; }
-    .color-swatch { width: 26px; height: 26px; }
+    .sketch-tool { width: 44px; height: 44px; }
+    .color-swatch { width: 30px; height: 30px; }
+    .step-pill { padding: 10px 14px; font-size: 13px; }
   }
 </style>
 </head>
@@ -2426,7 +2439,23 @@
         if (el) state.fields[id] = el.value;
       });
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const stateJson = JSON.stringify(state);
+      localStorage.setItem(STORAGE_KEY, stateJson);
+
+      // Also update the saved slot and sync to cloud if we have an active consultation
+      if (activeConsultationId) {
+        localStorage.setItem('gshs-saved-' + activeConsultationId, stateJson);
+        const index = getSavedIndex();
+        const entry = index.find(e => e.id === activeConsultationId);
+        if (entry) {
+          const clientName = state.fields.clientName || '';
+          entry.clientName = clientName;
+          entry.address = state.fields.clientAddress || '';
+          entry.updatedAt = new Date().toISOString();
+          setSavedIndex(index);
+        }
+        scheduleCloudSync(stateJson);
+      }
 
       const indicator = document.getElementById('saveIndicator');
       if (indicator) {
@@ -2436,6 +2465,20 @@
     } catch (e) {
       console.warn('Auto-save failed:', e);
     }
+  }
+
+  // Debounced cloud sync — syncs less frequently than local saves to avoid hammering the API
+  let cloudSyncTimeout = null;
+  function scheduleCloudSync(stateJson) {
+    if (!syncEnabled || !sb || !activeConsultationId) return;
+    clearTimeout(cloudSyncTimeout);
+    cloudSyncTimeout = setTimeout(() => {
+      const index = getSavedIndex();
+      const entry = index.find(e => e.id === activeConsultationId);
+      const clientName = entry ? entry.clientName : '';
+      const address = entry ? entry.address : '';
+      syncToCloud(activeConsultationId, clientName, address, stateJson);
+    }, 5000); // 5 second debounce for cloud sync
   }
 
   function loadState() {

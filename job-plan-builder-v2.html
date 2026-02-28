@@ -1,0 +1,2485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Get Started — Job Plan Builder v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root {
+    --sage: #7A8B6F;
+    --sage-light: #E8EDE5;
+    --sage-dark: #5C6B52;
+    --cream: #FAF8F5;
+    --warm-white: #FFFFFF;
+    --charcoal: #2C2C2C;
+    --text: #3A3A3A;
+    --text-light: #6B6B6B;
+    --border: #E2DDD7;
+    --border-light: #F0ECE7;
+    --accent: #C4915E;
+    --accent-light: #F5EDE3;
+    --red: #C45E5E;
+    --red-light: #F5E3E3;
+    --blue: #5E7EC4;
+    --blue-light: #E3EAF5;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+
+  .app-header {
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .app-logo {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sage-dark);
+    letter-spacing: -0.3px;
+  }
+
+  .app-logo span { color: var(--accent); }
+
+  .header-subtitle {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .new-btn {
+    padding: 6px 14px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Step Nav */
+  .step-nav {
+    display: flex;
+    gap: 4px;
+    padding: 12px 20px;
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--border-light);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .step-nav::-webkit-scrollbar { display: none; }
+
+  .step-pill {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-light);
+    background: var(--border-light);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .step-pill.active { background: var(--sage); color: white; }
+  .step-pill.completed { background: var(--sage-light); color: var(--sage-dark); }
+
+  .main-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 100px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  .section-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 4px;
+  }
+
+  .section-desc {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 24px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+
+  /* Form */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+
+  .field-hint {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  input[type="text"], input[type="email"], input[type="tel"],
+  input[type="number"], input[type="date"], textarea, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--warm-white);
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px rgba(122,139,111,0.12);
+  }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  .inline-fields { display: flex; gap: 12px; }
+  .inline-fields .field { flex: 1; }
+
+  /* Toggles */
+  .toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .toggle-item:last-child { margin-bottom: 0; }
+
+  .toggle-item.selected {
+    border-color: var(--sage);
+    background: var(--sage-light);
+    color: var(--sage-dark);
+  }
+
+  .toggle-item .check {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .toggle-item.selected .check {
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+
+  .toggle-item.selected .check::after {
+    content: '✓'; color: white; font-size: 12px; font-weight: 700;
+  }
+
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .service-grid .toggle-item { margin-bottom: 0; }
+
+  /* Volume */
+  .volume-selector { display: flex; gap: 8px; }
+
+  .volume-btn {
+    flex: 1; padding: 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--warm-white);
+    cursor: pointer; text-align: center;
+    font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .volume-btn.selected {
+    border-color: var(--sage);
+    background: var(--sage-light);
+    color: var(--sage-dark);
+  }
+
+  /* Room Cards */
+  .room-card {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .room-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; cursor: pointer; user-select: none;
+  }
+
+  .room-card-header:active { background: var(--border-light); }
+
+  .room-card-left { display: flex; align-items: center; gap: 10px; }
+
+  .room-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--sage-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .room-name { font-weight: 600; font-size: 15px; }
+  .room-summary { font-size: 12px; color: var(--text-light); }
+
+  .room-expand {
+    font-size: 18px; color: var(--text-light);
+    transition: transform 0.2s;
+  }
+
+  .room-card.expanded .room-expand { transform: rotate(180deg); }
+
+  .room-card-body {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .room-card.expanded .room-card-body {
+    display: block; padding-top: 16px;
+  }
+
+  .delete-btn {
+    padding: 4px 10px; border: none;
+    background: var(--red-light); color: var(--red);
+    border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    margin-right: 8px;
+  }
+
+  .add-room-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 16px; text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .add-room-area select {
+    max-width: 250px; margin: 0 auto 10px; display: block;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+
+  .btn-primary { background: var(--sage); color: white; }
+  .btn-primary:active { background: var(--sage-dark); transform: scale(0.98); }
+  .btn-secondary { background: var(--border-light); color: var(--text); }
+  .btn-secondary:active { background: var(--border); }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:active { background: #B07E4E; }
+  .btn-blue { background: var(--blue); color: white; }
+  .btn-blue:active { background: #4A6AAE; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+  .btn-block { width: 100%; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+  /* Phase Cards */
+  .phase-card {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    padding: 20px; margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--sage);
+  }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    padding: 16px; text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+  }
+
+  .stat-value {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px; font-weight: 700;
+    color: var(--sage-dark);
+  }
+
+  .stat-label {
+    font-size: 12px; color: var(--text-light);
+    font-weight: 500; margin-top: 2px;
+  }
+
+  /* Output */
+  .output-box {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    padding: 24px; margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    font-size: 14px; line-height: 1.8;
+    white-space: pre-wrap;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .output-label {
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+
+  /* Tab bar for output */
+  .tab-bar {
+    display: flex; gap: 4px;
+    margin-bottom: 16px;
+    background: var(--border-light);
+    border-radius: 10px;
+    padding: 3px;
+  }
+
+  .tab-btn {
+    flex: 1; padding: 10px;
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-light);
+    background: transparent;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: var(--warm-white);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Claude prompt section */
+  .claude-section {
+    background: linear-gradient(135deg, #F0EDE8 0%, #E8EDE5 100%);
+    border-radius: var(--radius);
+    padding: 20px; margin-bottom: 16px;
+    border: 1.5px solid var(--sage-light);
+  }
+
+  .claude-section .card-title {
+    color: var(--sage-dark);
+    margin-bottom: 4px;
+  }
+
+  .claude-desc {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 14px;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--warm-white);
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex; gap: 10px; justify-content: space-between;
+    z-index: 100;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+  }
+
+  .bottom-bar .btn { flex: 1; }
+
+  .toast {
+    position: fixed; bottom: 80px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--charcoal); color: white;
+    padding: 10px 20px; border-radius: 8px;
+    font-size: 14px; font-weight: 500;
+    opacity: 0; transition: all 0.3s;
+    z-index: 200; pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Save indicator */
+  .save-indicator {
+    font-size: 11px;
+    color: var(--sage);
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-indicator.visible { opacity: 1; }
+
+  /* Saved consultations overlay */
+  .saved-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: rgba(0,0,0,0.4);
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .saved-overlay.active { display: flex; }
+
+  .saved-panel {
+    background: var(--warm-white);
+    border-radius: 16px 16px 0 0;
+    width: 100%; max-width: 600px;
+    max-height: 80vh;
+    display: flex; flex-direction: column;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .saved-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 12px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .saved-panel-header h3 {
+    font-size: 18px; font-weight: 700; color: var(--charcoal);
+  }
+
+  .saved-panel-close {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: var(--border-light);
+    font-size: 18px; cursor: pointer; color: var(--text-light);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .saved-panel-list {
+    flex: 1; overflow-y: auto; padding: 12px 20px 20px;
+  }
+
+  .saved-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .saved-item:active { background: var(--sage-light); border-color: var(--sage); }
+  .saved-item.current { border-color: var(--sage); background: var(--sage-light); }
+
+  .saved-item-info { flex: 1; min-width: 0; }
+  .saved-item-name { font-weight: 600; font-size: 15px; color: var(--charcoal); }
+  .saved-item-detail { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+  .saved-item-actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 12px; }
+
+  .saved-item-delete {
+    padding: 5px 10px; border: none;
+    background: var(--red-light); color: var(--red);
+    border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+
+  .saved-empty {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-light); font-size: 14px;
+  }
+
+  /* Auth screen */
+  .auth-screen {
+    position: fixed; inset: 0; z-index: 600;
+    background: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .auth-screen.hidden { display: none; }
+
+  .auth-box {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    width: 100%; max-width: 380px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
+    margin: 20px;
+  }
+
+  .auth-logo {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--sage-dark);
+    text-align: center; margin-bottom: 4px;
+  }
+  .auth-logo span { color: var(--accent); }
+
+  .auth-subtitle {
+    text-align: center; font-size: 13px;
+    color: var(--text-light); margin-bottom: 24px;
+  }
+
+  .auth-error {
+    background: var(--red-light); color: var(--red);
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    margin-bottom: 16px; display: none;
+  }
+  .auth-error.visible { display: block; }
+
+  .auth-toggle {
+    text-align: center; margin-top: 16px;
+    font-size: 13px; color: var(--text-light);
+  }
+  .auth-toggle a {
+    color: var(--sage-dark); font-weight: 600;
+    cursor: pointer; text-decoration: none;
+  }
+
+  .sync-indicator {
+    font-size: 11px; color: var(--blue);
+    font-weight: 500; opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .sync-indicator.visible { opacity: 1; }
+
+  /* Room disposition */
+  .disposition-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+  .disposition-btn {
+    padding: 7px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--warm-white);
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .disposition-btn.selected {
+    border-color: var(--sage);
+    background: var(--sage-light);
+    color: var(--sage-dark);
+  }
+
+  /* Trailer days */
+  .trailer-days-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-left: 30px;
+    font-size: 13px;
+    color: var(--text-light);
+  }
+  .trailer-days-row input {
+    width: 60px;
+    padding: 6px 10px;
+    text-align: center;
+  }
+
+  /* Contact remove */
+  .contact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  /* ─── Sketch Pad ─── */
+  .sketch-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: var(--cream);
+    display: none; flex-direction: column;
+  }
+  .sketch-overlay.active { display: flex; }
+
+  .sketch-toolbar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 12px;
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    -webkit-user-select: none; user-select: none;
+  }
+
+  .sketch-toolbar .tool-group {
+    display: flex; align-items: center; gap: 4px;
+    padding-right: 8px;
+    border-right: 1px solid var(--border-light);
+  }
+  .sketch-toolbar .tool-group:last-child { border-right: none; padding-right: 0; }
+
+  .sketch-tool {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--warm-white);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sketch-tool:active { transform: scale(0.93); }
+  .sketch-tool.active {
+    border-color: var(--sage);
+    background: var(--sage-light);
+  }
+
+  .sketch-done-btn {
+    background: var(--sage); color: white;
+    border-color: var(--sage);
+    font-weight: 600; font-size: 14px;
+    width: auto; padding: 0 16px;
+  }
+  .sketch-done-btn:active { background: var(--sage-dark); }
+
+  .size-dot { border-radius: 50%; background: var(--charcoal); }
+
+  .color-swatch {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .color-swatch.active {
+    border-color: var(--charcoal);
+    box-shadow: 0 0 0 2px white, 0 0 0 3.5px var(--charcoal);
+  }
+
+  .sketch-page-toggle {
+    display: flex;
+    background: var(--border-light);
+    border-radius: 8px;
+    padding: 2px;
+  }
+  .sketch-page-toggle button {
+    padding: 8px 14px;
+    border: none; border-radius: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-light);
+    transition: all 0.15s;
+  }
+  .sketch-page-toggle button.active {
+    background: var(--warm-white);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .sketch-page-nav {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-light);
+  }
+  .sketch-page-nav .sketch-tool { width: 36px; height: 36px; font-size: 14px; }
+
+  .sketch-canvas-wrap {
+    flex: 1; overflow: hidden; position: relative;
+    background: white;
+  }
+  .sketch-canvas {
+    display: block;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .sketch-canvas.eraser-mode { cursor: grab; }
+
+  @media (max-width: 600px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .service-grid { grid-template-columns: 1fr; }
+    .inline-fields { flex-direction: column; gap: 0; }
+    .disposition-selector { gap: 4px; }
+    .disposition-btn { padding: 6px 10px; font-size: 12px; }
+    .sketch-toolbar { gap: 4px; padding: 8px; }
+    .sketch-tool { width: 40px; height: 40px; }
+    .color-swatch { width: 26px; height: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">Get Started<span> ·</span> Job Plan Builder</div>
+    <div class="auth-subtitle">Sign in to sync your consultations</div>
+    <div class="auth-error" id="authError"></div>
+    <div class="field">
+      <label class="field-label">Email</label>
+      <input type="email" id="authEmail" placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label class="field-label">Password</label>
+      <input type="password" id="authPassword" placeholder="Password">
+    </div>
+    <button class="btn btn-primary btn-block" id="authSubmit" onclick="handleAuth()" style="margin-top:8px">Sign In</button>
+    <div class="auth-toggle" id="authToggle">
+      Don't have an account? <a onclick="toggleAuthMode()">Sign Up</a>
+    </div>
+  </div>
+</div>
+
+<header class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="app-logo">Get Started<span> ·</span> Job Plan Builder</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="header-subtitle">v2 — Consultation & Planning</div>
+        <div class="save-indicator" id="saveIndicator">✓ Saved</div>
+        <div class="sync-indicator" id="syncIndicator">✓ Synced</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="new-btn" onclick="openSketch()" style="background:var(--sage-light);color:var(--sage-dark)">✎ Notes</button>
+      <button class="new-btn" onclick="openSavedPanel()" style="background:var(--blue-light);color:var(--blue)">Saved</button>
+      <button class="new-btn" onclick="resetAll()">+ New</button>
+    </div>
+  </div>
+</header>
+
+<nav class="step-nav" id="stepNav">
+  <button class="step-pill active" data-step="0">Client Info</button>
+  <button class="step-pill" data-step="1">Walkthrough</button>
+  <button class="step-pill" data-step="2">Phases</button>
+  <button class="step-pill" data-step="3">Notes & Details</button>
+  <button class="step-pill" data-step="4">Review & Export</button>
+</nav>
+
+<div class="main-content">
+
+  <!-- STEP 0: Client Info -->
+  <div class="section active" id="step-0">
+    <h2 class="section-title">Client Information</h2>
+    <p class="section-desc">Capture key details before your walkthrough.</p>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Client Details</div>
+      <div class="field">
+        <label class="field-label">Client Name <span class="field-hint">(person transitioning)</span></label>
+        <input type="text" id="clientName" placeholder="e.g. Margaret Wilson">
+      </div>
+      <div class="field">
+        <label class="field-label">Current Address</label>
+        <input type="text" id="clientAddress" placeholder="Full address of current home">
+      </div>
+      <div class="inline-fields">
+        <div class="field">
+          <label class="field-label">Home Type</label>
+          <select id="homeType">
+            <option value="">Select...</option>
+            <option>House</option>
+            <option>Townhouse</option>
+            <option>Condo / Apartment</option>
+            <option>Mobile Home</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Approx. Sq Ft</label>
+          <input type="number" id="homeSqft" placeholder="e.g. 1400">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Destination Type</label>
+        <select id="destinationType">
+          <option value="">Select...</option>
+          <option>Assisted Living / Care Home</option>
+          <option>Independent Living</option>
+          <option>Family Member's Home</option>
+          <option>Downsized Home / Condo</option>
+          <option>Storage Only</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Destination Name</label>
+        <input type="text" id="destination" placeholder="e.g. Rosewood Gardens, Unit 112">
+      </div>
+      <div class="field">
+        <label class="field-label">Destination Address</label>
+        <input type="text" id="destinationAddress" placeholder="Full address of destination">
+      </div>
+      <div class="field">
+        <label class="field-label">Move Timeline</label>
+        <select id="moveTimeline">
+          <option value="">Select...</option>
+          <option>ASAP / Urgent</option>
+          <option>Within 2 weeks</option>
+          <option>Within 1 month</option>
+          <option>1-3 months</option>
+          <option>Flexible / Waitlist</option>
+          <option>TBD — pending placement</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Family / Key Contacts</div>
+      <div id="contactsContainer">
+        <div class="contact-entry" data-index="0">
+          <div class="inline-fields">
+            <div class="field">
+              <label class="field-label">Contact Name</label>
+              <input type="text" class="contact-name" placeholder="e.g. Sarah Wilson">
+            </div>
+            <div class="field">
+              <label class="field-label">Relation</label>
+              <input type="text" class="contact-role" placeholder="e.g. Son, POA">
+            </div>
+          </div>
+          <div class="inline-fields">
+            <div class="field">
+              <label class="field-label">Phone</label>
+              <input type="tel" class="contact-phone" placeholder="604-555-1234">
+            </div>
+            <div class="field">
+              <label class="field-label">Email</label>
+              <input type="email" class="contact-email" placeholder="email@example.com">
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="addContact()">+ Add Contact</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Realtor</div>
+      <div class="field">
+        <label class="field-label">Realtor Name</label>
+        <input type="text" id="realtorName" placeholder="e.g. Jane Smith">
+      </div>
+      <div class="inline-fields">
+        <div class="field">
+          <label class="field-label">Phone</label>
+          <input type="tel" id="realtorPhone" placeholder="604-555-5678">
+        </div>
+        <div class="field">
+          <label class="field-label">Email</label>
+          <input type="email" id="realtorEmail" placeholder="">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Realtor Notes</label>
+        <textarea id="realtorNotes" rows="2" placeholder="e.g. Will coordinate staging, also family's personal realtor"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">General Notes</div>
+      <div class="field">
+        <textarea id="generalNotes" rows="3" placeholder="Any general notes about the consultation, the home, or the situation..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Room Walkthrough -->
+  <div class="section" id="step-1">
+    <h2 class="section-title">Room-by-Room Walkthrough</h2>
+    <p class="section-desc">Capture what you see in each room during the walk.</p>
+
+    <div id="roomsContainer"></div>
+
+    <div class="add-room-area">
+      <p style="font-size:14px;font-weight:500;margin-bottom:10px;color:var(--text-light)">Add a room</p>
+      <select id="roomTypeSelect">
+        <option value="">Choose room type...</option>
+        <option value="Living Room">Living Room</option>
+        <option value="Primary Bedroom">Primary Bedroom</option>
+        <option value="Bedroom">Bedroom</option>
+        <option value="Kitchen">Kitchen</option>
+        <option value="Dining Room">Dining Room</option>
+        <option value="Bathroom">Bathroom</option>
+        <option value="Den / Office">Den / Office</option>
+        <option value="Garage">Garage</option>
+        <option value="Basement">Basement</option>
+        <option value="Storage / Crawlspace">Storage / Crawlspace</option>
+        <option value="Laundry Room">Laundry Room</option>
+        <option value="Patio / Deck">Patio / Deck</option>
+        <option value="Shed / Outbuilding">Shed / Outbuilding</option>
+        <option value="Entranceway / Hallway">Entranceway / Hallway</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="addRoom()">+ Add Room</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Phases -->
+  <div class="section" id="step-2">
+    <h2 class="section-title">Services & Phases</h2>
+    <p class="section-desc">Define the phases of work based on your walkthrough.</p>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Services Required</div>
+      <div class="service-grid" id="servicesGrid">
+        <div class="toggle-item" data-service="sorting" onclick="toggleEl(this)"><div class="check"></div>Sorting / Downsizing</div>
+        <div class="toggle-item" data-service="packing" onclick="toggleEl(this)"><div class="check"></div>Packing</div>
+        <div class="toggle-item" data-service="moving" onclick="toggleEl(this)"><div class="check"></div>Moving</div>
+        <div class="toggle-item" data-service="unpacking" onclick="toggleEl(this)"><div class="check"></div>Unpacking</div>
+        <div class="toggle-item" data-service="removal" onclick="toggleEl(this)"><div class="check"></div>Removal / Clearout</div>
+        <div class="toggle-item" data-service="donations" onclick="toggleEl(this)"><div class="check"></div>Donation Runs</div>
+        <div class="toggle-item" data-service="staging" onclick="toggleEl(this)"><div class="check"></div>Staging / Organizing</div>
+        <div class="toggle-item" data-service="auction" onclick="toggleEl(this)"><div class="check"></div>Auction Coordination</div>
+        <div class="toggle-item" data-service="exterior" onclick="toggleEl(this)"><div class="check"></div>Exterior / Curb Appeal</div>
+        <div class="toggle-item" data-service="cleaning" onclick="toggleEl(this)"><div class="check"></div>Cleaning</div>
+      </div>
+    </div>
+
+    <div id="phasesContainer"></div>
+
+    <button class="btn btn-primary btn-block" onclick="addPhase()" style="margin-top:16px">+ Add Phase</button>
+  </div>
+
+  <!-- STEP 3: Notes & Details -->
+  <div class="section" id="step-3">
+    <h2 class="section-title">Notes & Details</h2>
+    <p class="section-desc">Standard notes, auction info, and personal touches for the email.</p>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Standard Client Notes</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">Toggle the notes to include in the job plan email.</p>
+      <div id="standardNotes">
+        <div class="toggle-item selected" data-note="valuables" onclick="toggleEl(this)">
+          <div class="check"></div>
+          <span>We recommend personally transporting any money, sensitive documents, and sentimental items for peace of mind.</span>
+        </div>
+        <div class="toggle-item selected" data-note="soft-items" onclick="toggleEl(this)">
+          <div class="check"></div>
+          <span>Soft items can remain inside furniture — we'll wrap everything securely. We only ask that hard or loose items are removed.</span>
+        </div>
+        <div class="toggle-item selected" data-note="checkin" onclick="toggleEl(this)">
+          <div class="check"></div>
+          <span>We'll check in with you as needed during the process to confirm decisions, so nothing moves forward without your comfort and approval.</span>
+        </div>
+        <div class="toggle-item" data-note="team-standard" onclick="toggleEl(this)">
+          <div class="check"></div>
+          <span>Our team is experienced, professional, and held to a high standard.</span>
+        </div>
+        <div class="toggle-item" data-note="urban-auctions" onclick="toggleEl(this)">
+          <div class="check"></div>
+          <span>Items for auction will be transported to Urban Auctions. Urban Auctions fees are 30% per lot.</span>
+        </div>
+        <div class="toggle-item" data-note="maxsold" onclick="toggleEl(this)">
+          <div class="check"></div>
+          <span>A MaxSold online auction may be suitable for this home given the volume and value of items.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Custom Notes</div>
+      <div class="field">
+        <label class="field-label">Additional notes for the job plan</label>
+        <textarea id="customNotes" rows="3" placeholder="Any other details specific to this job..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Auction Recommendation</div>
+      <div class="field">
+        <label class="field-label">Auction approach</label>
+        <select id="auctionApproach">
+          <option value="">Not applicable</option>
+          <option value="urban">Urban Auctions — select valuable items</option>
+          <option value="maxsold">MaxSold — full online auction</option>
+          <option value="both">Both Urban Auctions & MaxSold</option>
+          <option value="not-recommended">Auction not cost-effective — donate/dispose</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Auction notes</label>
+        <textarea id="auctionNotes" rows="2" placeholder="e.g. A few valuable furniture pieces worth sending to Urban Auctions, rest to donations"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Personal Touches for Email</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">These details help Claude write a warm, personalized email.</p>
+      <div class="field">
+        <label class="field-label">Who is the email addressed to?</label>
+        <input type="text" id="emailRecipient" placeholder="e.g. David, Susan & family">
+      </div>
+      <div class="field">
+        <label class="field-label">Consultation details <span class="field-hint">(when, who was there, anything personal)</span></label>
+        <textarea id="consultDetails" rows="2" placeholder="e.g. Met Tuesday with the family at the home. Daughter mentioned mom loves her garden."></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Any personal notes to weave into the email</label>
+        <textarea id="personalNotes" rows="2" placeholder="e.g. Family was lovely, mom seemed nervous about the move — keep tone extra reassuring"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Review & Export -->
+  <div class="section" id="step-4">
+    <h2 class="section-title">Review & Export</h2>
+    <p class="section-desc">Review your plan and generate the client email.</p>
+
+    <div class="stats-row" id="summaryStats"></div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('plan',this)">Job Plan</button>
+      <button class="tab-btn" onclick="switchTab('estimate',this)">Estimate</button>
+      <button class="tab-btn" onclick="switchTab('claude',this)">Email via Claude</button>
+    </div>
+
+    <!-- Job Plan Tab -->
+    <div id="tab-plan">
+      <div class="output-label">Job Plan Summary</div>
+      <div class="output-box" id="planOutput"></div>
+      <button class="btn btn-primary btn-block" onclick="copyText('plan')">📋 Copy Job Plan</button>
+    </div>
+
+    <!-- Estimate Tab -->
+    <div id="tab-estimate" style="display:none">
+      <div class="output-label">Estimate Summary (for your reference / Wave)</div>
+      <div class="output-box" id="estimateOutput"></div>
+      <button class="btn btn-accent btn-block" onclick="copyText('estimate')">📋 Copy Estimate Summary</button>
+    </div>
+
+    <!-- Claude Email Tab -->
+    <div id="tab-claude" style="display:none">
+      <div class="claude-section">
+        <div class="card-title">Generate Client Email with Claude</div>
+        <p class="claude-desc">This will copy a detailed prompt with all your job data. Paste it into Claude (Opus 4.6) to generate a warm, client-ready email in your style.</p>
+        <button class="btn btn-blue btn-block" onclick="copyClaudePrompt()" style="margin-bottom:10px">📋 Copy Prompt for Claude</button>
+        <button class="btn btn-outline btn-block" onclick="openClaude()">Open Claude →</button>
+      </div>
+      <div class="output-label" style="margin-top:16px">Prompt Preview</div>
+      <div class="output-box" id="claudeOutput" style="font-size:13px;max-height:400px"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <button class="btn btn-secondary" id="prevBtn" onclick="prevStep()" style="display:none">← Back</button>
+  <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next →</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Saved Consultations Overlay -->
+<div class="saved-overlay" id="savedOverlay" onclick="if(event.target===this)closeSavedPanel()">
+  <div class="saved-panel">
+    <div class="saved-panel-header">
+      <h3>Saved Consultations</h3>
+      <button class="saved-panel-close" onclick="closeSavedPanel()">✕</button>
+    </div>
+    <div class="saved-panel-list" id="savedList"></div>
+  </div>
+</div>
+
+<!-- Sketch Pad Overlay -->
+<div class="sketch-overlay" id="sketchOverlay">
+  <div class="sketch-toolbar">
+    <div class="tool-group">
+      <button class="sketch-tool sketch-done-btn" onclick="closeSketch()">Done</button>
+    </div>
+    <div class="tool-group">
+      <div class="sketch-page-toggle" id="sketchPageToggle">
+        <button class="active" data-pagetype="blank" onclick="setSketchPageType('blank',this)">Blank</button>
+        <button data-pagetype="lined" onclick="setSketchPageType('lined',this)">Lined</button>
+      </div>
+    </div>
+    <div class="tool-group">
+      <button class="sketch-tool active" data-sketchtool="pen" onclick="setSketchTool('pen',this)">✏️</button>
+      <button class="sketch-tool" data-sketchtool="eraser" onclick="setSketchTool('eraser',this)">⌫</button>
+    </div>
+    <div class="tool-group" id="sketchSizeGroup">
+      <button class="sketch-tool size-btn" data-size="2" onclick="setSketchSize(2,this)"><div class="size-dot" style="width:5px;height:5px"></div></button>
+      <button class="sketch-tool size-btn active" data-size="4" onclick="setSketchSize(4,this)"><div class="size-dot" style="width:9px;height:9px"></div></button>
+      <button class="sketch-tool size-btn" data-size="8" onclick="setSketchSize(8,this)"><div class="size-dot" style="width:15px;height:15px"></div></button>
+    </div>
+    <div class="tool-group" id="sketchColorGroup">
+      <div class="color-swatch active" data-color="#2C2C2C" style="background:#2C2C2C" onclick="setSketchColor('#2C2C2C',this)"></div>
+      <div class="color-swatch" data-color="#5E7EC4" style="background:#5E7EC4" onclick="setSketchColor('#5E7EC4',this)"></div>
+      <div class="color-swatch" data-color="#C45E5E" style="background:#C45E5E" onclick="setSketchColor('#C45E5E',this)"></div>
+      <div class="color-swatch" data-color="#5C6B52" style="background:#5C6B52" onclick="setSketchColor('#5C6B52',this)"></div>
+      <div class="color-swatch" data-color="#C4915E" style="background:#C4915E" onclick="setSketchColor('#C4915E',this)"></div>
+    </div>
+    <div class="tool-group">
+      <button class="sketch-tool" onclick="sketchUndo()">↩</button>
+      <button class="sketch-tool" onclick="sketchRedo()">↪</button>
+      <button class="sketch-tool" onclick="sketchClear()">🗑️</button>
+    </div>
+    <div class="tool-group">
+      <div class="sketch-page-nav">
+        <button class="sketch-tool" onclick="sketchPrevPage()">◀</button>
+        <span id="sketchPageIndicator">1 / 1</span>
+        <button class="sketch-tool" onclick="sketchNextPage()">▶</button>
+        <button class="sketch-tool" onclick="sketchAddPage()" title="Add page">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="sketch-canvas-wrap" id="sketchCanvasWrap">
+    <canvas id="sketchCanvas" class="sketch-canvas"></canvas>
+  </div>
+</div>
+
+<script>
+  // ─── Supabase Init ─────────────────────────────────────────
+  const SUPABASE_URL = 'https://lpofskxcdcyucyfkaqqf.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_6Va0sk7JZiThCn9jlhoA-g_XXPK7Pns';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ─── Auth ──────────────────────────────────────────────────
+  let authMode = 'signin'; // 'signin' or 'signup'
+
+  function toggleAuthMode() {
+    authMode = authMode === 'signin' ? 'signup' : 'signin';
+    document.getElementById('authSubmit').textContent = authMode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('authToggle').innerHTML = authMode === 'signin'
+      ? 'Don\'t have an account? <a onclick="toggleAuthMode()">Sign Up</a>'
+      : 'Already have an account? <a onclick="toggleAuthMode()">Sign In</a>';
+    document.getElementById('authError').classList.remove('visible');
+  }
+
+  async function handleAuth() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errEl = document.getElementById('authError');
+    errEl.classList.remove('visible');
+
+    if (!email || !password) {
+      errEl.textContent = 'Please enter both email and password.';
+      errEl.classList.add('visible');
+      return;
+    }
+    if (password.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.classList.add('visible');
+      return;
+    }
+
+    document.getElementById('authSubmit').textContent = 'Loading...';
+    document.getElementById('authSubmit').disabled = true;
+
+    try {
+      let result;
+      if (authMode === 'signup') {
+        result = await supabase.auth.signUp({ email, password });
+      } else {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      }
+
+      if (result.error) {
+        errEl.textContent = result.error.message;
+        errEl.classList.add('visible');
+      } else {
+        document.getElementById('authScreen').classList.add('hidden');
+        initApp();
+      }
+    } catch (e) {
+      errEl.textContent = 'Connection error. The app will work offline.';
+      errEl.classList.add('visible');
+    }
+
+    document.getElementById('authSubmit').textContent = authMode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('authSubmit').disabled = false;
+  }
+
+  // Allow Enter key to submit auth
+  document.getElementById('authPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleAuth();
+  });
+
+  // Check for existing session on load
+  async function checkSession() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        document.getElementById('authScreen').classList.add('hidden');
+        initApp();
+      }
+    } catch (e) {
+      // Offline — skip auth, run in local-only mode
+      document.getElementById('authScreen').classList.add('hidden');
+      initApp();
+    }
+  }
+
+  // ─── Sync Engine ───────────────────────────────────────────
+  let syncEnabled = false;
+
+  function showSyncIndicator(msg) {
+    const el = document.getElementById('syncIndicator');
+    if (el) {
+      el.textContent = msg || '✓ Synced';
+      el.classList.add('visible');
+      setTimeout(() => el.classList.remove('visible'), 2500);
+    }
+  }
+
+  async function syncToCloud(consultationId, clientName, address, stateJson) {
+    if (!syncEnabled) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabase.from('consultations').upsert({
+        id: consultationId,
+        user_id: session.user.id,
+        client_name: clientName,
+        address: address || '',
+        data: JSON.parse(stateJson),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+
+      if (!error) showSyncIndicator('✓ Synced');
+      else console.warn('Sync error:', error.message);
+    } catch (e) {
+      console.warn('Sync failed (offline?):', e);
+    }
+  }
+
+  async function deleteFromCloud(consultationId) {
+    if (!syncEnabled) return;
+    try {
+      await supabase.from('consultations').delete().eq('id', consultationId);
+    } catch (e) {
+      console.warn('Cloud delete failed:', e);
+    }
+  }
+
+  async function pullFromCloud() {
+    if (!syncEnabled) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: cloudRows, error } = await supabase
+        .from('consultations')
+        .select('id, client_name, address, data, created_at, updated_at')
+        .order('updated_at', { ascending: false });
+
+      if (error || !cloudRows) return;
+
+      // Merge cloud data into local storage
+      const localIndex = getSavedIndex();
+      let changed = false;
+
+      for (const row of cloudRows) {
+        const localEntry = localIndex.find(e => e.id === row.id);
+        const localData = localStorage.getItem('gshs-saved-' + row.id);
+
+        if (!localEntry) {
+          // Cloud has a consultation we don't have locally — add it
+          localIndex.push({
+            id: row.id,
+            clientName: row.client_name,
+            address: row.address || '',
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
+          });
+          localStorage.setItem('gshs-saved-' + row.id, JSON.stringify(row.data));
+          changed = true;
+        } else {
+          // Both exist — most recent wins
+          const localTime = new Date(localEntry.updatedAt || localEntry.createdAt).getTime();
+          const cloudTime = new Date(row.updated_at).getTime();
+          if (cloudTime > localTime) {
+            localEntry.clientName = row.client_name;
+            localEntry.address = row.address || '';
+            localEntry.updatedAt = row.updated_at;
+            localStorage.setItem('gshs-saved-' + row.id, JSON.stringify(row.data));
+            changed = true;
+          }
+        }
+      }
+
+      // Push any local-only consultations to the cloud
+      for (const local of localIndex) {
+        const inCloud = cloudRows.find(r => r.id === local.id);
+        if (!inCloud) {
+          const stateJson = localStorage.getItem('gshs-saved-' + local.id);
+          if (stateJson) {
+            await syncToCloud(local.id, local.clientName, local.address, stateJson);
+          }
+        }
+      }
+
+      if (changed) {
+        // Sort by updated time
+        localIndex.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+        setSavedIndex(localIndex);
+      }
+
+      showSyncIndicator('✓ Synced');
+    } catch (e) {
+      console.warn('Pull from cloud failed:', e);
+    }
+  }
+
+  // ─── App Init ──────────────────────────────────────────────
+  async function initApp() {
+    // Enable sync if we have a session
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      syncEnabled = !!session;
+    } catch (e) {
+      syncEnabled = false;
+    }
+
+    // Load local state first (instant)
+    loadState();
+
+    // Then pull cloud data in the background
+    if (syncEnabled) {
+      pullFromCloud();
+    }
+  }
+
+  let currentStep = 0;
+  const totalSteps = 5;
+  let rooms = [];
+  let phases = [];
+  let contactCount = 1;
+  let roomCounter = 0;
+
+  const roomIcons = {
+    'Living Room':'🛋️','Primary Bedroom':'🛏️','Bedroom':'🛏️',
+    'Kitchen':'🍳','Dining Room':'🍽️','Bathroom':'🚿',
+    'Den / Office':'📚','Garage':'🔧','Basement':'📦',
+    'Storage / Crawlspace':'📦','Laundry Room':'🧺',
+    'Patio / Deck':'🌿','Shed / Outbuilding':'🏚️',
+    'Entranceway / Hallway':'🚪','Other':'📋'
+  };
+
+  const serviceLabels = {
+    sorting:'Sorting & Downsizing', packing:'Packing', moving:'Moving',
+    unpacking:'Unpacking', removal:'Removal & Clearout', donations:'Donation Runs',
+    staging:'Staging & Organizing', auction:'Auction Coordination',
+    exterior:'Exterior & Curb Appeal', cleaning:'Cleaning'
+  };
+
+  // Nav
+  function goToStep(step) {
+    if (step < 0 || step >= totalSteps) return;
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step-${step}`).classList.add('active');
+    document.querySelectorAll('.step-pill').forEach((p, i) => {
+      p.classList.remove('active');
+      if (i < step) p.classList.add('completed');
+      else p.classList.remove('completed');
+      if (i === step) p.classList.add('active');
+    });
+    currentStep = step;
+    document.getElementById('prevBtn').style.display = step === 0 ? 'none' : '';
+    document.getElementById('nextBtn').textContent = step === totalSteps - 1 ? '✓ Done' : 'Next →';
+    if (step === 4) generateAllOutputs();
+    window.scrollTo(0, 0);
+  }
+
+  function nextStep() {
+    if (currentStep < totalSteps - 1) goToStep(currentStep + 1);
+    else saveConsultation();
+  }
+  function prevStep() { if (currentStep > 0) goToStep(currentStep - 1); }
+  document.querySelectorAll('.step-pill').forEach(p => {
+    p.addEventListener('click', () => goToStep(parseInt(p.dataset.step)));
+  });
+
+  function toggleEl(el) { el.classList.toggle('selected'); scheduleSave(); }
+
+  // Tabs
+  function switchTab(tab, btn) {
+    ['plan','estimate','claude'].forEach(t => {
+      document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none';
+    });
+    btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // Contacts
+  function addContact() {
+    const c = document.getElementById('contactsContainer');
+    const idx = contactCount++;
+    const div = document.createElement('div');
+    div.className = 'contact-entry';
+    div.dataset.index = idx;
+    div.style.cssText = 'margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)';
+    div.innerHTML = `
+      <div class="contact-header">
+        <span style="font-size:13px;font-weight:600;color:var(--text-light)">Contact ${idx + 1}</span>
+        <button class="delete-btn" onclick="removeContact(this)">Remove</button>
+      </div>
+      <div class="inline-fields">
+        <div class="field"><label class="field-label">Contact Name</label><input type="text" class="contact-name" placeholder="Name"></div>
+        <div class="field"><label class="field-label">Relation</label><input type="text" class="contact-role" placeholder="e.g. Daughter"></div>
+      </div>
+      <div class="inline-fields">
+        <div class="field"><label class="field-label">Phone</label><input type="tel" class="contact-phone" placeholder="604-555-1234"></div>
+        <div class="field"><label class="field-label">Email</label><input type="email" class="contact-email" placeholder="email@example.com"></div>
+      </div>`;
+    c.appendChild(div);
+    scheduleSave();
+  }
+
+  function removeContact(btn) {
+    const entry = btn.closest('.contact-entry');
+    if (entry) { entry.remove(); scheduleSave(); }
+  }
+
+  // Rooms
+  function addRoom() {
+    const sel = document.getElementById('roomTypeSelect');
+    if (!sel.value) return;
+    rooms.push({ id: roomCounter++, type: sel.value, volume: '', hours: '', crew: '', specialItems: '', notes: '', keepItems: '', disposition: [] });
+    sel.value = '';
+    renderRooms();
+    scheduleSave();
+  }
+
+  function removeRoom(id) { rooms = rooms.filter(r => r.id !== id); renderRooms(); scheduleSave(); }
+
+  function toggleRoomExpand(id) {
+    document.querySelector(`.room-card[data-id="${id}"]`).classList.toggle('expanded');
+  }
+
+  const dispositions = ['Pack & Move', 'Sort & Downsize', 'Clear Out', 'Leave As-Is'];
+
+  function getRoomSummary(room) {
+    let parts = [];
+    const disp = Array.isArray(room.disposition) ? room.disposition : (room.disposition ? [room.disposition] : []);
+    if (disp.length) parts.push(disp.join(', '));
+    if (room.volume) parts.push(room.volume + ' volume');
+    if (room.hours) parts.push('~' + room.hours + 'hrs');
+    return parts.length ? parts.join(' · ') : 'Tap to expand';
+  }
+
+  function renderRooms() {
+    document.getElementById('roomsContainer').innerHTML = rooms.map(room => `
+      <div class="room-card" data-id="${room.id}">
+        <div class="room-card-header" onclick="toggleRoomExpand(${room.id})">
+          <div class="room-card-left">
+            <div class="room-icon">${roomIcons[room.type]||'📋'}</div>
+            <div>
+              <div class="room-name">${room.type}</div>
+              <div class="room-summary">${getRoomSummary(room)}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="delete-btn" onclick="event.stopPropagation();removeRoom(${room.id})">Remove</button>
+            <span class="room-expand">▼</span>
+          </div>
+        </div>
+        <div class="room-card-body">
+          <div class="field">
+            <label class="field-label">What's happening with this room?</label>
+            <div class="disposition-selector">
+              ${dispositions.map(d => {
+                const disp = Array.isArray(room.disposition) ? room.disposition : (room.disposition ? [room.disposition] : []);
+                return `<button class="disposition-btn ${disp.includes(d)?'selected':''}" onclick="setRoomDisposition(${room.id},'${d}',this)">${d}</button>`;
+              }).join('')}
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Volume of Belongings</label>
+            <div class="volume-selector">
+              ${['Light','Moderate','Heavy','Very Heavy'].map(v =>
+                `<button class="volume-btn ${room.volume===v?'selected':''}" onclick="setRoomField(${room.id},'volume','${v}',this)">${v}</button>`
+              ).join('')}
+            </div>
+          </div>
+          <div class="inline-fields">
+            <div class="field"><label class="field-label">Est. Hours</label><input type="number" step="0.5" placeholder="e.g. 2" value="${room.hours}" oninput="setRoomVal(${room.id},'hours',this.value)"></div>
+            <div class="field"><label class="field-label">Crew Size</label><input type="number" placeholder="e.g. 2" value="${room.crew}" oninput="setRoomVal(${room.id},'crew',this.value)"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">Special / Notable Items</label>
+            <textarea rows="2" placeholder="e.g. Piano, antique china cabinet, fragile artwork" oninput="setRoomVal(${room.id},'specialItems',this.value)">${room.specialItems}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">Items to Keep / Family Keepsakes</label>
+            <textarea rows="2" placeholder="e.g. Grandfather clock — going to daughter. Photo albums — client keeping." oninput="setRoomVal(${room.id},'keepItems',this.value)">${room.keepItems}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">Notes</label>
+            <textarea rows="2" placeholder="Room notes, access issues, client requests..." oninput="setRoomVal(${room.id},'notes',this.value)">${room.notes}</textarea>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function setRoomDisposition(id, val, el) {
+    const r = rooms.find(x => x.id === id);
+    if (r) {
+      if (!Array.isArray(r.disposition)) r.disposition = r.disposition ? [r.disposition] : [];
+      const idx = r.disposition.indexOf(val);
+      if (idx >= 0) r.disposition.splice(idx, 1);
+      else r.disposition.push(val);
+    }
+    el.classList.toggle('selected');
+    const summary = document.querySelector(`.room-card[data-id="${id}"] .room-summary`);
+    if (summary && r) summary.textContent = getRoomSummary(r);
+    scheduleSave();
+  }
+
+  function setRoomField(id, field, val, el) {
+    const r = rooms.find(x => x.id === id);
+    if (r) r[field] = val;
+    el.parentElement.querySelectorAll('.volume-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    const summary = document.querySelector(`.room-card[data-id="${id}"] .room-summary`);
+    if (summary && r) summary.textContent = getRoomSummary(r);
+    scheduleSave();
+  }
+
+  function setRoomVal(id, field, val) {
+    const r = rooms.find(x => x.id === id);
+    if (r) r[field] = val;
+  }
+
+  // Phases
+  let phaseCounter = 0;
+
+  function addPhase() {
+    phases.push({ id: phaseCounter++, name: '', description: '', hours: '', crew: '', notes: '', includesTrailer: false, trailerDays: 1, date: '' });
+    renderPhases();
+    scheduleSave();
+  }
+
+  function removePhase(id) { phases = phases.filter(p => p.id !== id); renderPhases(); scheduleSave(); }
+
+  function renderPhases() {
+    document.getElementById('phasesContainer').innerHTML = phases.map((p, i) => `
+      <div class="card" style="margin-top:16px;border-left:4px solid var(--sage)">
+        <div class="card-header">
+          <div class="card-title">Phase ${i + 1}</div>
+          <button class="delete-btn" onclick="removePhase(${p.id})">Remove</button>
+        </div>
+        <div class="field">
+          <label class="field-label">Phase Name</label>
+          <input type="text" placeholder="e.g. Packing Day, Moving Day, Removal & Clearout" value="${p.name}" oninput="updatePhase(${p.id},'name',this.value)">
+        </div>
+        <div class="field">
+          <label class="field-label">Scheduled Date <span class="field-hint">(if known)</span></label>
+          <input type="text" placeholder="e.g. September 6th, TBD" value="${p.date}" oninput="updatePhase(${p.id},'date',this.value)">
+        </div>
+        <div class="field">
+          <label class="field-label">Description</label>
+          <textarea rows="3" placeholder="What this phase involves..." oninput="updatePhase(${p.id},'description',this.value)">${p.description}</textarea>
+        </div>
+        <div class="inline-fields">
+          <div class="field"><label class="field-label">Est. Hours</label><input type="number" step="0.5" placeholder="e.g. 7" value="${p.hours}" oninput="updatePhase(${p.id},'hours',this.value)"></div>
+          <div class="field"><label class="field-label">Crew Size</label><input type="number" placeholder="e.g. 3" value="${p.crew}" oninput="updatePhase(${p.id},'crew',this.value)"></div>
+        </div>
+        <div class="field">
+          <div class="toggle-item ${p.includesTrailer?'selected':''}" onclick="togglePhaseTrailer(${p.id},this)">
+            <div class="check"></div>Includes Truck & Trailer
+          </div>
+          <div class="trailer-days-row" data-phase-trailer="${p.id}" style="display:${p.includesTrailer?'flex':'none'}">
+            <span>Days needed:</span>
+            <input type="number" min="1" value="${p.trailerDays||1}" oninput="updatePhase(${p.id},'trailerDays',this.value)" onclick="event.stopPropagation()">
+            <span>× $65/day = $${((parseInt(p.trailerDays)||1)*65)}</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Phase Notes</label>
+          <textarea rows="2" placeholder="e.g. Elevator booked for 1pm, will coordinate with building manager" oninput="updatePhase(${p.id},'notes',this.value)">${p.notes}</textarea>
+        </div>
+      </div>`).join('');
+  }
+
+  function updatePhase(id, field, val) {
+    const p = phases.find(x => x.id === id);
+    if (p) p[field] = val;
+  }
+
+  function togglePhaseTrailer(id, el) {
+    const p = phases.find(x => x.id === id);
+    if (p) {
+      p.includesTrailer = !p.includesTrailer;
+      el.classList.toggle('selected');
+      const daysRow = document.querySelector(`[data-phase-trailer="${id}"]`);
+      if (daysRow) daysRow.style.display = p.includesTrailer ? 'flex' : 'none';
+    }
+    scheduleSave();
+  }
+
+  // Gather all data
+  function gatherData() {
+    const data = {
+      clientName: document.getElementById('clientName').value || '[Client Name]',
+      address: document.getElementById('clientAddress').value || '',
+      homeType: document.getElementById('homeType').value || '',
+      sqft: document.getElementById('homeSqft').value || '',
+      destinationType: document.getElementById('destinationType').value || '',
+      destination: document.getElementById('destination').value || '',
+      destinationAddress: document.getElementById('destinationAddress').value || '',
+      timeline: document.getElementById('moveTimeline').value || '',
+      contacts: [...document.querySelectorAll('.contact-entry')].map(el => ({
+        name: el.querySelector('.contact-name').value,
+        role: el.querySelector('.contact-role').value,
+        phone: el.querySelector('.contact-phone').value,
+        email: el.querySelector('.contact-email').value,
+      })).filter(c => c.name),
+      realtorName: document.getElementById('realtorName').value,
+      realtorPhone: document.getElementById('realtorPhone').value,
+      realtorEmail: document.getElementById('realtorEmail').value,
+      realtorNotes: document.getElementById('realtorNotes').value,
+      generalNotes: document.getElementById('generalNotes').value,
+      rooms: rooms,
+      services: [...document.querySelectorAll('#servicesGrid .toggle-item.selected')].map(el => el.dataset.service),
+      phases: phases,
+      standardNotes: [...document.querySelectorAll('#standardNotes .toggle-item.selected')].map(el => el.querySelector('span').textContent),
+      customNotes: document.getElementById('customNotes').value,
+      auctionApproach: document.getElementById('auctionApproach').value,
+      auctionNotes: document.getElementById('auctionNotes').value,
+      emailRecipient: document.getElementById('emailRecipient').value,
+      consultDetails: document.getElementById('consultDetails').value,
+      personalNotes: document.getElementById('personalNotes').value,
+    };
+
+    data.totalHours = phases.reduce((s, p) => s + (parseFloat(p.hours) || 0), 0);
+    data.maxCrew = phases.reduce((m, p) => Math.max(m, parseInt(p.crew) || 0), 0);
+    data.totalPersonHours = phases.reduce((s, p) => s + ((parseFloat(p.hours) || 0) * (parseInt(p.crew) || 0)), 0);
+    data.totalTrailerDays = phases.reduce((s, p) => s + (p.includesTrailer ? (parseInt(p.trailerDays) || 1) : 0), 0);
+    data.trailerCost = data.totalTrailerDays * 65;
+
+    return data;
+  }
+
+  // Generate outputs
+  function generateAllOutputs() {
+    const d = gatherData();
+
+    // Stats
+    document.getElementById('summaryStats').innerHTML = `
+      <div class="stat-card"><div class="stat-value">${d.phases.length}</div><div class="stat-label">Phases</div></div>
+      <div class="stat-card"><div class="stat-value">${d.totalPersonHours}</div><div class="stat-label">Person-Hours</div></div>
+      <div class="stat-card"><div class="stat-value">${d.rooms.length}</div><div class="stat-label">Rooms</div></div>`;
+
+    // Job Plan
+    let plan = `JOB PLAN — ${d.clientName}\n${'─'.repeat(40)}\n\n`;
+    let destStr = d.destination || '';
+    if (d.destinationType) destStr += destStr ? ` (${d.destinationType})` : d.destinationType;
+    if (d.destinationAddress) destStr += destStr ? `\n           ${d.destinationAddress}` : d.destinationAddress;
+    plan += `Transition: ${d.address}${d.homeType ? ` (${d.homeType})` : ''} → ${destStr || 'TBD'}\n`;
+    if (d.timeline) plan += `Timeline: ${d.timeline}\n`;
+    if (d.contacts.length) {
+      plan += `\nContacts:\n`;
+      d.contacts.forEach(c => {
+        plan += `  ${c.name}${c.role ? ` (${c.role})` : ''}${c.phone ? ' — ' + c.phone : ''}${c.email ? ' — ' + c.email : ''}\n`;
+      });
+    }
+    if (d.realtorName) plan += `\nRealtor: ${d.realtorName}${d.realtorPhone ? ' — ' + d.realtorPhone : ''}\n`;
+    if (d.generalNotes) plan += `\nGeneral Notes: ${d.generalNotes}\n`;
+
+    if (d.rooms.length) {
+      plan += `\n${'─'.repeat(40)}\nRoom Walkthrough\n\n`;
+      d.rooms.forEach(r => {
+        let parts = [r.type];
+        const disp = Array.isArray(r.disposition) ? r.disposition : (r.disposition ? [r.disposition] : []);
+        if (disp.length) parts.push(disp.join(', '));
+        if (r.volume) parts.push(r.volume + ' volume');
+        if (r.hours && r.crew) parts.push(`~${r.hours}hrs × ${r.crew} crew`);
+        plan += `  ${parts.join(' — ')}`;
+        if (r.specialItems) plan += `\n    Special: ${r.specialItems}`;
+        if (r.keepItems) plan += `\n    Keepsakes: ${r.keepItems}`;
+        if (r.notes) plan += `\n    Note: ${r.notes}`;
+        plan += '\n';
+      });
+    }
+
+    plan += `\n${'─'.repeat(40)}\n`;
+
+    d.phases.forEach((p, i) => {
+      plan += `\nPhase ${i+1}: ${p.name || 'Untitled'}${p.date ? ' — ' + p.date : ''}\n`;
+      if (p.description) plan += `${p.description}\n`;
+      plan += `Team: ${p.crew || '—'} people · Approximately ${p.hours || '—'} hours`;
+      if (p.includesTrailer) plan += ` · Truck & trailer (${parseInt(p.trailerDays)||1} day${(parseInt(p.trailerDays)||1)>1?'s':''})`;
+      plan += '\n';
+      if (p.notes) plan += `Note: ${p.notes}\n`;
+    });
+
+    if (d.standardNotes.length || d.customNotes) {
+      plan += `\n${'─'.repeat(40)}\nImportant Notes\n\n`;
+      d.standardNotes.forEach(n => plan += `• ${n}\n`);
+      if (d.customNotes) plan += `• ${d.customNotes}\n`;
+    }
+
+    if (d.auctionApproach) {
+      plan += `\nAuction: ${document.getElementById('auctionApproach').selectedOptions[0].text}\n`;
+      if (d.auctionNotes) plan += `${d.auctionNotes}\n`;
+    }
+
+    plan += `\n${'─'.repeat(40)}\n`;
+    plan += `Services: ${d.services.map(s => serviceLabels[s]).join(', ')}\n`;
+    plan += `Total estimated hours: ${d.totalHours}\n`;
+
+    document.getElementById('planOutput').textContent = plan;
+    window._planText = plan;
+
+    // Estimate
+    let est = `ESTIMATE SUMMARY\n${'─'.repeat(30)}\n\n`;
+    d.phases.forEach((p, i) => {
+      const hrs = parseFloat(p.hours) || 0;
+      const crew = parseInt(p.crew) || 0;
+      const ph = hrs * crew;
+      est += `Phase ${i+1}: ${p.name || 'Untitled'}${p.date ? ' — ' + p.date : ''}\n`;
+      est += `  ${crew} people × ${hrs} hrs = ${ph} person-hours\n`;
+      est += `  Labour: $${(ph * 90).toLocaleString()}\n`;
+      if (p.includesTrailer) {
+        const days = parseInt(p.trailerDays) || 1;
+        est += `  Truck & trailer: ${days} day${days>1?'s':''} × $65 = $${(days * 65).toLocaleString()}\n`;
+      }
+      est += '\n';
+    });
+
+    const labourSubtotal = d.totalPersonHours * 90;
+    const suppliesFee = labourSubtotal * 0.08;
+    const trailerTotal = d.trailerCost;
+    const subtotal = labourSubtotal + suppliesFee + trailerTotal;
+    const gst = Math.round(subtotal * 0.05);
+    const total = Math.round(subtotal + gst);
+    est += `${'─'.repeat(30)}\n`;
+    est += `Total person-hours: ${d.totalPersonHours}\n`;
+    est += `Labour: $${labourSubtotal.toLocaleString()}\n`;
+    est += `Supplies fee (8%): $${Math.round(suppliesFee).toLocaleString()}\n`;
+    if (trailerTotal > 0) est += `Truck & trailer: ${d.totalTrailerDays} day${d.totalTrailerDays>1?'s':''} × $65 = $${trailerTotal.toLocaleString()}\n`;
+    est += `Subtotal: $${Math.round(subtotal).toLocaleString()}\n`;
+    est += `GST (5%): $${gst.toLocaleString()}\n`;
+    est += `Estimated total: $${total.toLocaleString()}\n`;
+
+    document.getElementById('estimateOutput').textContent = est;
+    window._estimateText = est;
+
+    // Claude prompt
+    let prompt = `You are writing a client-facing job plan email for Get Started Home Services, a seniors moving and home transition company based in the Fraser Valley / Metro Vancouver area. The email should be warm, professional, and reassuring — these clients are families managing a major life transition for a loved one.\n\n`;
+    prompt += `WRITING STYLE:\n`;
+    prompt += `- Warm but professional. Not corporate, not overly casual.\n`;
+    prompt += `- Reassuring and empathetic — families need to feel their loved one is in good hands.\n`;
+    prompt += `- Use clear, plain language. No jargon.\n`;
+    prompt += `- Structure the email with the phases as the backbone, using natural paragraph flow — not excessive bullet points.\n`;
+    prompt += `- Include practical details (times, team sizes, logistics) naturally within the description.\n`;
+    prompt += `- End with an invitation to ask questions or make adjustments.\n`;
+    prompt += `- Sign off as Garrett from Get Started Home Services.\n\n`;
+
+    prompt += `CLIENT DATA:\n`;
+    prompt += `Client: ${d.clientName}\n`;
+    prompt += `Current home: ${d.address} (${d.homeType})\n`;
+    prompt += `Moving to: ${d.destination}${d.destinationType ? ' (' + d.destinationType + ')' : ''}${d.destinationAddress ? ' — ' + d.destinationAddress : ''}\n`;
+    prompt += `Timeline: ${d.timeline}\n`;
+    if (d.contacts.length) {
+      prompt += `Family contacts: ${d.contacts.map(c => `${c.name} (${c.role})`).join(', ')}\n`;
+    }
+    if (d.realtorName) prompt += `Realtor: ${d.realtorName}${d.realtorNotes ? ' — ' + d.realtorNotes : ''}\n`;
+
+    prompt += `\nEMAIL RECIPIENT: ${d.emailRecipient || d.contacts[0]?.name || 'the family'}\n`;
+
+    if (d.consultDetails) prompt += `\nCONSULTATION DETAILS (weave naturally into opening):\n${d.consultDetails}\n`;
+    if (d.personalNotes) prompt += `\nPERSONAL NOTES (use to inform tone):\n${d.personalNotes}\n`;
+
+    prompt += `\nROOM WALKTHROUGH SUMMARY:\n`;
+    d.rooms.forEach(r => {
+      const disp = Array.isArray(r.disposition) ? r.disposition : (r.disposition ? [r.disposition] : []);
+      prompt += `- ${r.type}${disp.length ? ' [' + disp.join(', ') + ']' : ''}: ${r.volume || 'unspecified'} volume`;
+      if (r.specialItems) prompt += ` | Special items: ${r.specialItems}`;
+      if (r.keepItems) prompt += ` | Keepsakes: ${r.keepItems}`;
+      if (r.notes) prompt += ` | Notes: ${r.notes}`;
+      prompt += '\n';
+    });
+
+    prompt += `\nPHASES OF WORK:\n`;
+    d.phases.forEach((p, i) => {
+      prompt += `\nPhase ${i+1}: ${p.name}${p.date ? ' — ' + p.date : ''}\n`;
+      prompt += `  Team: ${p.crew} people, approximately ${p.hours} hours${p.includesTrailer ? ', truck & trailer (' + (parseInt(p.trailerDays)||1) + ' day' + ((parseInt(p.trailerDays)||1)>1?'s':'') + ')' : ''}\n`;
+      if (p.description) prompt += `  Details: ${p.description}\n`;
+      if (p.notes) prompt += `  Notes: ${p.notes}\n`;
+    });
+
+    prompt += `\nSERVICES: ${d.services.map(s => serviceLabels[s]).join(', ')}\n`;
+
+    if (d.auctionApproach) {
+      prompt += `\nAUCTION RECOMMENDATION: ${document.getElementById('auctionApproach').selectedOptions[0].text}\n`;
+      if (d.auctionNotes) prompt += `Details: ${d.auctionNotes}\n`;
+    }
+
+    if (d.standardNotes.length) {
+      prompt += `\nINCLUDE THESE IMPORTANT NOTES (word them naturally within the email):\n`;
+      d.standardNotes.forEach(n => prompt += `- ${n}\n`);
+    }
+
+    if (d.customNotes) prompt += `\nADDITIONAL NOTES TO INCLUDE:\n${d.customNotes}\n`;
+
+    prompt += `\nMention that the estimate is attached for their review. Do not include dollar amounts in the email body — the estimate document covers that.\n`;
+    prompt += `\nPlease write the full email now.`;
+
+    document.getElementById('claudeOutput').textContent = prompt;
+    window._claudePrompt = prompt;
+  }
+
+  // Copy
+  function copyText(type) {
+    const text = type === 'plan' ? window._planText : window._estimateText;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => showToast(type === 'plan' ? 'Job plan copied!' : 'Estimate copied!'));
+  }
+
+  function copyClaudePrompt() {
+    if (!window._claudePrompt) return;
+    navigator.clipboard.writeText(window._claudePrompt).then(() => showToast('Prompt copied! Paste into Claude.'));
+  }
+
+  function openClaude() {
+    window.open('https://claude.ai/new', '_blank');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ─── Saved Consultations System ──────────────────────────
+  const SAVED_INDEX_KEY = 'gshs-saved-index';
+  let activeConsultationId = null;
+
+  function getSavedIndex() {
+    try { return JSON.parse(localStorage.getItem(SAVED_INDEX_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function setSavedIndex(index) {
+    localStorage.setItem(SAVED_INDEX_KEY, JSON.stringify(index));
+  }
+
+  function saveConsultation() {
+    saveState(); // flush current state first
+    const d = gatherData();
+    const clientName = d.clientName === '[Client Name]' ? '' : d.clientName;
+    if (!clientName) {
+      showToast('Enter a client name before saving.');
+      return;
+    }
+
+    const state = localStorage.getItem(STORAGE_KEY);
+    const index = getSavedIndex();
+
+    // Update existing or create new
+    if (activeConsultationId) {
+      const entry = index.find(e => e.id === activeConsultationId);
+      if (entry) {
+        entry.clientName = clientName;
+        entry.address = d.address;
+        entry.updatedAt = new Date().toISOString();
+      }
+      localStorage.setItem('gshs-saved-' + activeConsultationId, state);
+    } else {
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      activeConsultationId = id;
+      index.unshift({
+        id: id,
+        clientName: clientName,
+        address: d.address,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      localStorage.setItem('gshs-saved-' + id, state);
+    }
+
+    setSavedIndex(index);
+    showToast(`Saved: ${clientName}`);
+
+    // Sync to cloud in background
+    syncToCloud(activeConsultationId, clientName, d.address, state);
+  }
+
+  function loadConsultation(id) {
+    const raw = localStorage.getItem('gshs-saved-' + id);
+    if (!raw) { showToast('Consultation not found.'); return; }
+
+    // Store into current working key and reload
+    localStorage.setItem(STORAGE_KEY, raw);
+    activeConsultationId = id;
+    clearFormCompletely();
+    loadState();
+    goToStep(0);
+    closeSavedPanel();
+    showToast('Consultation loaded.');
+  }
+
+  function deleteConsultation(id, e) {
+    e.stopPropagation();
+    const index = getSavedIndex();
+    const entry = index.find(x => x.id === id);
+    const name = entry ? entry.clientName : 'this consultation';
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+    localStorage.removeItem('gshs-saved-' + id);
+    const newIndex = index.filter(x => x.id !== id);
+    setSavedIndex(newIndex);
+
+    if (activeConsultationId === id) activeConsultationId = null;
+
+    renderSavedList();
+    showToast('Consultation deleted.');
+
+    // Delete from cloud in background
+    deleteFromCloud(id);
+  }
+
+  function openSavedPanel() {
+    renderSavedList();
+    document.getElementById('savedOverlay').classList.add('active');
+  }
+
+  function closeSavedPanel() {
+    document.getElementById('savedOverlay').classList.remove('active');
+  }
+
+  function renderSavedList() {
+    const index = getSavedIndex();
+    const list = document.getElementById('savedList');
+
+    if (!index.length) {
+      list.innerHTML = '<div class="saved-empty">No saved consultations yet.<br>Hit "Done" to save your first one.</div>';
+      return;
+    }
+
+    list.innerHTML = index.map(entry => {
+      const date = new Date(entry.updatedAt || entry.createdAt);
+      const dateStr = date.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+      const isCurrent = entry.id === activeConsultationId;
+      return `
+        <div class="saved-item ${isCurrent ? 'current' : ''}" onclick="loadConsultation('${entry.id}')">
+          <div class="saved-item-info">
+            <div class="saved-item-name">${entry.clientName}${isCurrent ? ' (active)' : ''}</div>
+            <div class="saved-item-detail">${entry.address || 'No address'} · ${dateStr}</div>
+          </div>
+          <div class="saved-item-actions">
+            <button class="saved-item-delete" onclick="deleteConsultation('${entry.id}', event)">Delete</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Clear form without touching localStorage
+  function clearFormCompletely() {
+    rooms = []; phases = []; contactCount = 1; roomCounter = 0; phaseCounter = 0;
+    document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+    document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+    document.querySelectorAll('.service-grid .toggle-item').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('#standardNotes .toggle-item').forEach((el, i) => {
+      if (i < 3) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+    document.getElementById('roomsContainer').innerHTML = '';
+    document.getElementById('phasesContainer').innerHTML = '';
+    document.getElementById('contactsContainer').innerHTML = `
+      <div class="contact-entry" data-index="0">
+        <div class="inline-fields">
+          <div class="field"><label class="field-label">Contact Name</label><input type="text" class="contact-name" placeholder="e.g. Sarah Wilson"></div>
+          <div class="field"><label class="field-label">Relation</label><input type="text" class="contact-role" placeholder="e.g. Son, POA"></div>
+        </div>
+        <div class="inline-fields">
+          <div class="field"><label class="field-label">Phone</label><input type="tel" class="contact-phone" placeholder="604-555-1234"></div>
+          <div class="field"><label class="field-label">Email</label><input type="email" class="contact-email" placeholder="email@example.com"></div>
+        </div>
+      </div>`;
+    sketchPages = [{ strokes: [], undone: [], pageType: 'blank' }];
+    sketchCurrentPage = 0;
+    if (sketchCanvas) { sketchRedraw(); updateSketchPageUI(); }
+  }
+
+  // Reset
+  function resetAll() {
+    if (!confirm('Start a new consultation? This will clear all current data.')) return;
+    activeConsultationId = null;
+    localStorage.removeItem(STORAGE_KEY);
+    clearFormCompletely();
+    goToStep(0);
+  }
+
+  // ─── Sketch Pad ───────────────────────────────────────────
+  const sketchCanvas = document.getElementById('sketchCanvas');
+  const sketchCtx = sketchCanvas.getContext('2d');
+  let sketchPages = [{ strokes: [], undone: [], pageType: 'blank' }];
+  let sketchCurrentPage = 0;
+  let sketchTool = 'pen';
+  let sketchColor = '#2C2C2C';
+  let sketchSize = 4;
+  let sketchDrawing = false;
+  let sketchErasing = false;
+  let sketchCurrentStroke = null;
+  let sketchDPR = window.devicePixelRatio || 1;
+
+  function openSketch() {
+    document.getElementById('sketchOverlay').classList.add('active');
+    setTimeout(() => {
+      setupSketchCanvas();
+      sketchRedraw();
+      updateSketchPageUI();
+    }, 50);
+  }
+
+  function closeSketch() {
+    document.getElementById('sketchOverlay').classList.remove('active');
+    scheduleSave();
+  }
+
+  function setupSketchCanvas() {
+    const wrap = document.getElementById('sketchCanvasWrap');
+    const rect = wrap.getBoundingClientRect();
+    sketchDPR = window.devicePixelRatio || 1;
+    sketchCanvas.width = rect.width * sketchDPR;
+    sketchCanvas.height = rect.height * sketchDPR;
+    sketchCanvas.style.width = rect.width + 'px';
+    sketchCanvas.style.height = rect.height + 'px';
+    sketchCtx.scale(sketchDPR, sketchDPR);
+  }
+
+  function getSketchPage() { return sketchPages[sketchCurrentPage]; }
+
+  function sketchDrawBackground() {
+    const w = sketchCanvas.width / sketchDPR;
+    const h = sketchCanvas.height / sketchDPR;
+    sketchCtx.fillStyle = '#FFFFFF';
+    sketchCtx.fillRect(0, 0, w, h);
+    if (getSketchPage().pageType === 'lined') {
+      const spacing = 34;
+      sketchCtx.strokeStyle = '#E2DDD7';
+      sketchCtx.lineWidth = 0.5;
+      for (let y = spacing; y < h; y += spacing) {
+        sketchCtx.beginPath();
+        sketchCtx.moveTo(20, y);
+        sketchCtx.lineTo(w - 20, y);
+        sketchCtx.stroke();
+      }
+    }
+  }
+
+  function sketchDrawStroke(s) {
+    if (!s.points || s.points.length < 2) return;
+    sketchCtx.beginPath();
+    sketchCtx.strokeStyle = s.color;
+    sketchCtx.lineWidth = s.width;
+    sketchCtx.lineCap = 'round';
+    sketchCtx.lineJoin = 'round';
+    sketchCtx.globalAlpha = 1;
+    sketchCtx.moveTo(s.points[0].x, s.points[0].y);
+    for (let i = 1; i < s.points.length - 1; i++) {
+      const mx = (s.points[i].x + s.points[i + 1].x) / 2;
+      const my = (s.points[i].y + s.points[i + 1].y) / 2;
+      sketchCtx.quadraticCurveTo(s.points[i].x, s.points[i].y, mx, my);
+    }
+    const last = s.points[s.points.length - 1];
+    sketchCtx.lineTo(last.x, last.y);
+    sketchCtx.stroke();
+  }
+
+  function sketchRedraw() {
+    sketchCtx.setTransform(sketchDPR, 0, 0, sketchDPR, 0, 0);
+    sketchDrawBackground();
+    getSketchPage().strokes.forEach(s => sketchDrawStroke(s));
+  }
+
+  function sketchGetPos(e) {
+    const rect = sketchCanvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function sketchEraseAt(pos) {
+    const page = getSketchPage();
+    for (let i = page.strokes.length - 1; i >= 0; i--) {
+      for (const pt of page.strokes[i].points) {
+        if (Math.hypot(pt.x - pos.x, pt.y - pos.y) < page.strokes[i].width + 12) {
+          page.strokes.splice(i, 1);
+          sketchRedraw();
+          return;
+        }
+      }
+    }
+  }
+
+  // Pointer events for drawing
+  sketchCanvas.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    const pos = sketchGetPos(e);
+    if (sketchTool === 'eraser') {
+      sketchErasing = true;
+      sketchEraseAt(pos);
+      sketchCanvas.setPointerCapture(e.pointerId);
+      return;
+    }
+    sketchDrawing = true;
+    sketchCurrentStroke = { points: [pos], color: sketchColor, width: sketchSize };
+    sketchCanvas.setPointerCapture(e.pointerId);
+  });
+
+  sketchCanvas.addEventListener('pointermove', function(e) {
+    e.preventDefault();
+    if (sketchErasing) { sketchEraseAt(sketchGetPos(e)); return; }
+    if (!sketchDrawing || !sketchCurrentStroke) return;
+    const pos = sketchGetPos(e);
+    sketchCurrentStroke.points.push(pos);
+    const pts = sketchCurrentStroke.points;
+    const len = pts.length;
+    sketchCtx.strokeStyle = sketchCurrentStroke.color;
+    sketchCtx.lineWidth = sketchCurrentStroke.width;
+    sketchCtx.lineCap = 'round';
+    sketchCtx.lineJoin = 'round';
+    if (len < 3) {
+      sketchCtx.beginPath();
+      sketchCtx.moveTo(pts[len - 2].x, pts[len - 2].y);
+      sketchCtx.lineTo(pts[len - 1].x, pts[len - 1].y);
+      sketchCtx.stroke();
+    } else {
+      const prev = pts[len - 3], curr = pts[len - 2], next = pts[len - 1];
+      const mx1 = (prev.x + curr.x) / 2, my1 = (prev.y + curr.y) / 2;
+      const mx2 = (curr.x + next.x) / 2, my2 = (curr.y + next.y) / 2;
+      sketchCtx.beginPath();
+      sketchCtx.moveTo(mx1, my1);
+      sketchCtx.quadraticCurveTo(curr.x, curr.y, mx2, my2);
+      sketchCtx.stroke();
+    }
+  });
+
+  sketchCanvas.addEventListener('pointerup', function(e) {
+    if (sketchErasing) { sketchErasing = false; scheduleSave(); return; }
+    if (!sketchDrawing) return;
+    sketchDrawing = false;
+    if (sketchCurrentStroke && sketchCurrentStroke.points.length > 1) {
+      getSketchPage().strokes.push(sketchCurrentStroke);
+      getSketchPage().undone = [];
+      scheduleSave();
+    }
+    sketchCurrentStroke = null;
+  });
+
+  sketchCanvas.addEventListener('pointerleave', function(e) {
+    if (sketchErasing) { sketchErasing = false; return; }
+    if (!sketchDrawing) return;
+    sketchDrawing = false;
+    if (sketchCurrentStroke && sketchCurrentStroke.points.length > 1) {
+      getSketchPage().strokes.push(sketchCurrentStroke);
+      getSketchPage().undone = [];
+    }
+    sketchCurrentStroke = null;
+  });
+
+  // Sketch tool controls
+  function setSketchTool(tool, el) {
+    sketchTool = tool;
+    document.querySelectorAll('[data-sketchtool]').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    sketchCanvas.classList.toggle('eraser-mode', tool === 'eraser');
+  }
+
+  function setSketchSize(size, el) {
+    sketchSize = size;
+    document.querySelectorAll('#sketchSizeGroup .size-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function setSketchColor(color, el) {
+    sketchColor = color;
+    document.querySelectorAll('#sketchColorGroup .color-swatch').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    // Auto-switch to pen when picking a color
+    if (sketchTool === 'eraser') {
+      setSketchTool('pen', document.querySelector('[data-sketchtool="pen"]'));
+    }
+  }
+
+  function setSketchPageType(type, el) {
+    getSketchPage().pageType = type;
+    document.querySelectorAll('#sketchPageToggle button').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    sketchRedraw();
+    scheduleSave();
+  }
+
+  function sketchUndo() {
+    const page = getSketchPage();
+    if (page.strokes.length === 0) return;
+    page.undone.push(page.strokes.pop());
+    sketchRedraw();
+    scheduleSave();
+  }
+
+  function sketchRedo() {
+    const page = getSketchPage();
+    if (page.undone.length === 0) return;
+    page.strokes.push(page.undone.pop());
+    sketchRedraw();
+    scheduleSave();
+  }
+
+  function sketchClear() {
+    const page = getSketchPage();
+    if (page.strokes.length === 0) return;
+    if (!confirm('Clear this page?')) return;
+    page.strokes = [];
+    page.undone = [];
+    sketchRedraw();
+    scheduleSave();
+  }
+
+  // Multi-page
+  function updateSketchPageUI() {
+    document.getElementById('sketchPageIndicator').textContent =
+      `${sketchCurrentPage + 1} / ${sketchPages.length}`;
+    // Sync page type toggle
+    const pt = getSketchPage().pageType;
+    document.querySelectorAll('#sketchPageToggle button').forEach(b => {
+      b.classList.toggle('active', b.dataset.pagetype === pt);
+    });
+  }
+
+  function sketchGoToPage(idx) {
+    if (idx < 0 || idx >= sketchPages.length) return;
+    sketchCurrentPage = idx;
+    sketchRedraw();
+    updateSketchPageUI();
+  }
+
+  function sketchPrevPage() { sketchGoToPage(sketchCurrentPage - 1); }
+  function sketchNextPage() { sketchGoToPage(sketchCurrentPage + 1); }
+
+  function sketchAddPage() {
+    sketchPages.push({ strokes: [], undone: [], pageType: 'blank' });
+    sketchGoToPage(sketchPages.length - 1);
+    scheduleSave();
+  }
+
+  // ─── Auto-save System ─────────────────────────────────────
+  const STORAGE_KEY = 'gshs-current-consultation';
+  let saveTimeout = null;
+
+  function scheduleSave() {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(saveState, 800);
+  }
+
+  function saveState() {
+    try {
+      const state = {
+        fields: {},
+        activeConsultationId: activeConsultationId,
+        rooms: rooms,
+        phases: phases,
+        contactCount: contactCount,
+        roomCounter: roomCounter,
+        phaseCounter: phaseCounter,
+        currentStep: currentStep,
+        sketchPages: sketchPages.map(p => ({ strokes: p.strokes, pageType: p.pageType })),
+        sketchCurrentPage: sketchCurrentPage,
+        services: [...document.querySelectorAll('#servicesGrid .toggle-item.selected')].map(el => el.dataset.service),
+        standardNotes: [...document.querySelectorAll('#standardNotes .toggle-item.selected')].map(el => el.dataset.note),
+        contacts: [...document.querySelectorAll('.contact-entry')].map(el => ({
+          name: el.querySelector('.contact-name').value,
+          role: el.querySelector('.contact-role').value,
+          phone: el.querySelector('.contact-phone').value,
+          email: el.querySelector('.contact-email').value,
+        })),
+      };
+
+      const fieldIds = ['clientName', 'clientAddress', 'homeType', 'homeSqft', 'destinationType', 'destination', 'destinationAddress', 'moveTimeline',
+        'realtorName', 'realtorPhone', 'realtorEmail', 'realtorNotes', 'generalNotes',
+        'customNotes', 'auctionApproach', 'auctionNotes', 'emailRecipient', 'consultDetails', 'personalNotes'];
+      fieldIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) state.fields[id] = el.value;
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+      const indicator = document.getElementById('saveIndicator');
+      if (indicator) {
+        indicator.classList.add('visible');
+        setTimeout(() => indicator.classList.remove('visible'), 2000);
+      }
+    } catch (e) {
+      console.warn('Auto-save failed:', e);
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const state = JSON.parse(raw);
+
+      // Restore active consultation ID
+      if (state.activeConsultationId) activeConsultationId = state.activeConsultationId;
+
+      // Restore form fields
+      if (state.fields) {
+        Object.entries(state.fields).forEach(([id, val]) => {
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        });
+      }
+
+      // Restore rooms and phases
+      if (state.rooms) { rooms = state.rooms; renderRooms(); }
+      if (state.phases) { phases = state.phases; renderPhases(); }
+      if (typeof state.roomCounter === 'number') roomCounter = state.roomCounter;
+      if (typeof state.phaseCounter === 'number') phaseCounter = state.phaseCounter;
+      if (typeof state.contactCount === 'number') contactCount = state.contactCount;
+
+      // Restore contacts (create additional entries if needed)
+      if (state.contacts && state.contacts.length > 1) {
+        for (let i = 1; i < state.contacts.length; i++) {
+          addContact();
+        }
+      }
+      if (state.contacts) {
+        const entries = document.querySelectorAll('.contact-entry');
+        state.contacts.forEach((c, i) => {
+          if (entries[i]) {
+            entries[i].querySelector('.contact-name').value = c.name || '';
+            entries[i].querySelector('.contact-role').value = c.role || '';
+            entries[i].querySelector('.contact-phone').value = c.phone || '';
+            entries[i].querySelector('.contact-email').value = c.email || '';
+          }
+        });
+      }
+
+      // Restore service toggles
+      if (state.services) {
+        document.querySelectorAll('#servicesGrid .toggle-item').forEach(el => {
+          if (state.services.includes(el.dataset.service)) el.classList.add('selected');
+          else el.classList.remove('selected');
+        });
+      }
+
+      // Restore standard note toggles
+      if (state.standardNotes) {
+        document.querySelectorAll('#standardNotes .toggle-item').forEach(el => {
+          if (state.standardNotes.includes(el.dataset.note)) el.classList.add('selected');
+          else el.classList.remove('selected');
+        });
+      }
+
+      // Restore sketch pages
+      if (state.sketchPages && state.sketchPages.length) {
+        sketchPages = state.sketchPages.map(p => ({ strokes: p.strokes || [], undone: [], pageType: p.pageType || 'blank' }));
+        if (typeof state.sketchCurrentPage === 'number') sketchCurrentPage = state.sketchCurrentPage;
+      }
+
+      // Restore step
+      if (typeof state.currentStep === 'number') goToStep(state.currentStep);
+
+    } catch (e) {
+      console.warn('Failed to load saved state:', e);
+    }
+  }
+
+  // Event delegation for auto-save on all input/change events
+  document.addEventListener('input', scheduleSave);
+  document.addEventListener('change', scheduleSave);
+
+  // Check session and init app on page load
+  checkSession();
+</script>
+</body>
+</html>

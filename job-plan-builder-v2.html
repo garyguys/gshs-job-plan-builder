@@ -801,6 +801,100 @@
   }
   .sketch-canvas.eraser-mode { cursor: grab; }
 
+  /* ─── Photo Strip ─── */
+  .photo-strip { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .photo-thumb {
+    position: relative; width: 76px; height: 76px;
+    border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    cursor: pointer; background: var(--border-light);
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-del {
+    position: absolute; top: 3px; right: 3px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,0.55); color: white;
+    border: none; font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Sans', sans-serif; line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .photo-add {
+    width: 76px; height: 76px; border-radius: 8px;
+    border: 2px dashed var(--border); background: var(--cream);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; gap: 3px; flex-shrink: 0;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .photo-add:active { border-color: var(--sage); background: var(--sage-light); }
+  .photo-add-icon { font-size: 20px; }
+  .photo-add-label { font-size: 11px; font-weight: 600; color: var(--text-light); }
+
+  /* ─── Photo Lightbox ─── */
+  .photo-lightbox {
+    position: fixed; inset: 0; z-index: 700;
+    background: rgba(0,0,0,0.93);
+    display: none; align-items: center; justify-content: center;
+  }
+  .photo-lightbox.active { display: flex; }
+  .lightbox-img {
+    max-width: calc(100vw - 40px);
+    max-height: calc(100dvh - 120px);
+    object-fit: contain; border-radius: 8px;
+  }
+  .lightbox-close {
+    position: fixed; top: 20px; right: 20px;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,0.18); color: white;
+    border: none; font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lightbox-nav {
+    position: fixed; bottom: max(24px, env(safe-area-inset-bottom));
+    left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .lightbox-nav-btn {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(255,255,255,0.18); color: white;
+    border: none; font-size: 22px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lightbox-counter {
+    color: rgba(255,255,255,0.75); font-size: 14px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif; min-width: 48px; text-align: center;
+  }
+
+  /* ─── Active Client Chip ─── */
+  .active-client-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--sage-light); color: var(--sage-dark);
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .active-client-chip::before { content: '●'; font-size: 7px; color: var(--sage); }
+
+  /* ─── Empty States ─── */
+  .empty-state {
+    text-align: center; padding: 36px 24px;
+    color: var(--text-light); font-size: 14px;
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    margin-bottom: 16px;
+  }
+  .empty-state-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-state-title { font-weight: 700; color: var(--charcoal); font-size: 15px; margin-bottom: 4px; }
+
+  /* ─── Saved panel footer ─── */
+  .saved-panel-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-light);
+    flex-shrink: 0;
+  }
+
   @media (max-width: 600px) {
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .service-grid { grid-template-columns: 1fr; }
@@ -844,10 +938,11 @@
   <div class="header-top">
     <div>
       <div class="app-logo">Get Started<span> ·</span> Job Plan Builder</div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="header-subtitle">v2 — Consultation & Planning</div>
         <div class="save-indicator" id="saveIndicator">✓ Saved</div>
         <div class="sync-indicator" id="syncIndicator">✓ Synced</div>
+        <div class="active-client-chip" id="activeClientChip" style="display:none"></div>
       </div>
     </div>
     <div style="display:flex;gap:6px">
@@ -1179,6 +1274,17 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Photo Lightbox -->
+<div class="photo-lightbox" id="photoLightbox" onclick="if(event.target===this)closePhotoLightbox()">
+  <button class="lightbox-close" onclick="closePhotoLightbox()">✕</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="Room photo">
+  <div class="lightbox-nav" id="lightboxNav" style="display:none">
+    <button class="lightbox-nav-btn" onclick="lightboxPrev()">‹</button>
+    <span class="lightbox-counter" id="lightboxCounter"></span>
+    <button class="lightbox-nav-btn" onclick="lightboxNext()">›</button>
+  </div>
+</div>
+
 <!-- Saved Consultations Overlay -->
 <div class="saved-overlay" id="savedOverlay" onclick="if(event.target===this)closeSavedPanel()">
   <div class="saved-panel">
@@ -1187,6 +1293,9 @@
       <button class="saved-panel-close" onclick="closeSavedPanel()">✕</button>
     </div>
     <div class="saved-panel-list" id="savedList"></div>
+    <div class="saved-panel-footer">
+      <button class="btn btn-outline btn-sm btn-block" onclick="closeSavedPanel();setTimeout(resetAll,100)">+ Start New Consultation</button>
+    </div>
   </div>
 </div>
 
@@ -1368,12 +1477,17 @@
       const { data: { session } } = await sb.auth.getSession();
       if (!session) return;
 
+      // Strip photos before cloud upload — they stay local only
+      const cloudData = JSON.parse(stateJson);
+      if (cloudData.rooms) {
+        cloudData.rooms = cloudData.rooms.map(r => ({ ...r, photos: [] }));
+      }
       const { error } = await sb.from('consultations').upsert({
         id: consultationId,
         user_id: session.user.id,
         client_name: clientName,
         address: address || '',
-        data: JSON.parse(stateJson),
+        data: cloudData,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' });
 
@@ -1578,7 +1692,7 @@
   function addRoom() {
     const sel = document.getElementById('roomTypeSelect');
     if (!sel.value) return;
-    rooms.push({ id: roomCounter++, type: sel.value, volume: '', hours: '', crew: '', specialItems: '', notes: '', keepItems: '', disposition: [] });
+    rooms.push({ id: roomCounter++, type: sel.value, volume: '', hours: '', crew: '', specialItems: '', notes: '', keepItems: '', disposition: [], photos: [] });
     sel.value = '';
     renderRooms();
     scheduleSave();
@@ -1598,10 +1712,29 @@
     if (disp.length) parts.push(disp.join(', '));
     if (room.volume) parts.push(room.volume + ' volume');
     if (room.hours) parts.push('~' + room.hours + 'hrs');
+    if (room.photos && room.photos.length) parts.push(room.photos.length + '📷');
     return parts.length ? parts.join(' · ') : 'Tap to expand';
   }
 
+  function renderPhotoStripHtml(room) {
+    const photos = room.photos || [];
+    return `<div class="photo-strip" id="photo-strip-${room.id}">
+      ${photos.map((p, i) => `<div class="photo-thumb" onclick="openLightbox(${room.id},${i})"><img src="${p}" alt="Photo ${i+1}"><button class="photo-del" onclick="event.stopPropagation();removePhoto(${room.id},${i})">✕</button></div>`).join('')}
+      <label class="photo-add" for="photo-input-${room.id}"><span class="photo-add-icon">📷</span><span class="photo-add-label">Add Photo</span></label>
+      <input type="file" id="photo-input-${room.id}" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoAdd(${room.id},this)">
+    </div>`;
+  }
+
   function renderRooms() {
+    if (!rooms.length) {
+      document.getElementById('roomsContainer').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🏠</div>
+          <div class="empty-state-title">No rooms added yet</div>
+          <div>Select a room type below and tap Add Room to start the walkthrough.</div>
+        </div>`;
+      return;
+    }
     document.getElementById('roomsContainer').innerHTML = rooms.map(room => `
       <div class="room-card" data-id="${room.id}">
         <div class="room-card-header" onclick="toggleRoomExpand(${room.id})">
@@ -1650,6 +1783,10 @@
           <div class="field">
             <label class="field-label">Notes</label>
             <textarea rows="2" placeholder="Room notes, access issues, client requests..." oninput="setRoomVal(${room.id},'notes',this.value)">${room.notes}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">Photos <span class="field-hint" id="photo-count-${room.id}">${room.photos && room.photos.length ? room.photos.length + ' added' : 'optional'}</span></label>
+            ${renderPhotoStripHtml(room)}
           </div>
         </div>
       </div>`).join('');
@@ -1832,6 +1969,7 @@
         if (r.specialItems) plan += `\n    Special: ${r.specialItems}`;
         if (r.keepItems) plan += `\n    Keepsakes: ${r.keepItems}`;
         if (r.notes) plan += `\n    Note: ${r.notes}`;
+        if (r.photos && r.photos.length) plan += `\n    Photos: ${r.photos.length} attached`;
         plan += '\n';
       });
     }
@@ -2053,6 +2191,7 @@
     goToStep(0);
     closeSavedPanel();
     showToast('Consultation loaded.');
+    updateHeaderChip();
   }
 
   function deleteConsultation(id, e) {
@@ -2075,9 +2214,14 @@
     deleteFromCloud(id);
   }
 
-  function openSavedPanel() {
-    renderSavedList();
+  async function openSavedPanel() {
     document.getElementById('savedOverlay').classList.add('active');
+    renderSavedList();
+    if (syncEnabled) {
+      document.getElementById('savedList').innerHTML = '<div class="saved-empty">Syncing from cloud…</div>';
+      await pullFromCloud();
+      renderSavedList();
+    }
   }
 
   function closeSavedPanel() {
@@ -2145,6 +2289,7 @@
     localStorage.removeItem(STORAGE_KEY);
     clearFormCompletely();
     goToStep(0);
+    updateHeaderChip();
   }
 
   // ─── Sketch Pad ───────────────────────────────────────────
@@ -2399,6 +2544,119 @@
     scheduleSave();
   }
 
+  // ─── Photos ────────────────────────────────────────────────
+  let lightboxRoomId = null;
+  let lightboxPhotoIdx = 0;
+
+  function compressPhoto(file, maxDim, quality) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * ratio);
+          canvas.height = Math.round(img.height * ratio);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handlePhotoAdd(roomId, input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    showToast('Adding photo…');
+    const compressed = await compressPhoto(file, 1000, 0.72);
+    input.value = '';
+    const r = rooms.find(x => x.id === roomId);
+    if (!r) return;
+    if (!r.photos) r.photos = [];
+    r.photos.push(compressed);
+    refreshPhotoStrip(roomId);
+    scheduleSave();
+    showToast('Photo added.');
+  }
+
+  function refreshPhotoStrip(roomId) {
+    const r = rooms.find(x => x.id === roomId);
+    if (!r) return;
+    const strip = document.getElementById(`photo-strip-${roomId}`);
+    if (strip) {
+      const photos = r.photos || [];
+      strip.innerHTML = photos.map((p, i) =>
+        `<div class="photo-thumb" onclick="openLightbox(${roomId},${i})"><img src="${p}" alt="Photo ${i+1}"><button class="photo-del" onclick="event.stopPropagation();removePhoto(${roomId},${i})">✕</button></div>`
+      ).join('') +
+        `<label class="photo-add" for="photo-input-${roomId}"><span class="photo-add-icon">📷</span><span class="photo-add-label">Add Photo</span></label>` +
+        `<input type="file" id="photo-input-${roomId}" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoAdd(${roomId},this)">`;
+      const countEl = document.getElementById(`photo-count-${roomId}`);
+      if (countEl) countEl.textContent = photos.length ? `${photos.length} added` : 'optional';
+    }
+    const summary = document.querySelector(`.room-card[data-id="${roomId}"] .room-summary`);
+    if (summary && r) summary.textContent = getRoomSummary(r);
+  }
+
+  function removePhoto(roomId, idx) {
+    const r = rooms.find(x => x.id === roomId);
+    if (!r || !r.photos) return;
+    r.photos.splice(idx, 1);
+    refreshPhotoStrip(roomId);
+    scheduleSave();
+  }
+
+  function openLightbox(roomId, idx) {
+    const r = rooms.find(x => x.id === roomId);
+    if (!r || !r.photos || !r.photos[idx]) return;
+    lightboxRoomId = roomId;
+    lightboxPhotoIdx = idx;
+    updateLightboxDisplay();
+    document.getElementById('photoLightbox').classList.add('active');
+  }
+
+  function updateLightboxDisplay() {
+    const r = rooms.find(x => x.id === lightboxRoomId);
+    if (!r || !r.photos) return;
+    document.getElementById('lightboxImg').src = r.photos[lightboxPhotoIdx];
+    document.getElementById('lightboxCounter').textContent = `${lightboxPhotoIdx + 1} / ${r.photos.length}`;
+    document.getElementById('lightboxNav').style.display = r.photos.length > 1 ? 'flex' : 'none';
+  }
+
+  function lightboxPrev() {
+    const r = rooms.find(x => x.id === lightboxRoomId);
+    if (!r || !r.photos) return;
+    lightboxPhotoIdx = (lightboxPhotoIdx - 1 + r.photos.length) % r.photos.length;
+    updateLightboxDisplay();
+  }
+
+  function lightboxNext() {
+    const r = rooms.find(x => x.id === lightboxRoomId);
+    if (!r || !r.photos) return;
+    lightboxPhotoIdx = (lightboxPhotoIdx + 1) % r.photos.length;
+    updateLightboxDisplay();
+  }
+
+  function closePhotoLightbox() {
+    document.getElementById('photoLightbox').classList.remove('active');
+    document.getElementById('lightboxImg').src = '';
+  }
+
+  // ─── Active Client Header Chip ─────────────────────────────
+  function updateHeaderChip() {
+    const chip = document.getElementById('activeClientChip');
+    if (!chip) return;
+    const name = (document.getElementById('clientName')?.value || '').trim();
+    if (activeConsultationId && name) {
+      chip.textContent = name;
+      chip.style.display = 'inline-flex';
+    } else {
+      chip.style.display = 'none';
+    }
+  }
+
   // ─── Auto-save System ─────────────────────────────────────
   const STORAGE_KEY = 'gshs-current-consultation';
   let saveTimeout = null;
@@ -2442,6 +2700,24 @@
       const stateJson = JSON.stringify(state);
       localStorage.setItem(STORAGE_KEY, stateJson);
 
+      // Auto-assign consultation ID when client name is first entered
+      if (!activeConsultationId && state.fields.clientName && state.fields.clientName.trim()) {
+        const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        activeConsultationId = id;
+        state.activeConsultationId = id;
+        const newIndex = getSavedIndex();
+        newIndex.unshift({
+          id,
+          clientName: state.fields.clientName.trim(),
+          address: state.fields.clientAddress || '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        setSavedIndex(newIndex);
+        localStorage.setItem('gshs-saved-' + id, stateJson);
+        updateHeaderChip();
+      }
+
       // Also update the saved slot and sync to cloud if we have an active consultation
       if (activeConsultationId) {
         localStorage.setItem('gshs-saved-' + activeConsultationId, stateJson);
@@ -2456,6 +2732,8 @@
         }
         scheduleCloudSync(stateJson);
       }
+
+      updateHeaderChip();
 
       const indicator = document.getElementById('saveIndicator');
       if (indicator) {
@@ -2547,6 +2825,8 @@
 
       // Restore step
       if (typeof state.currentStep === 'number') goToStep(state.currentStep);
+
+      updateHeaderChip();
 
     } catch (e) {
       console.warn('Failed to load saved state:', e);

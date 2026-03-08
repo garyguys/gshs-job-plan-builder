@@ -1692,7 +1692,7 @@
   function addRoom() {
     const sel = document.getElementById('roomTypeSelect');
     if (!sel.value) return;
-    rooms.push({ id: roomCounter++, type: sel.value, volume: '', hours: '', crew: '', specialItems: '', notes: '', keepItems: '', disposition: [], photos: [] });
+    rooms.push({ id: roomCounter++, type: sel.value, volume: '', hours: '', crew: '', specialItems: '', movedItems: '', notes: '', keepItems: '', disposition: [], photos: [] });
     sel.value = '';
     renderRooms();
     scheduleSave();
@@ -1771,6 +1771,10 @@
           <div class="inline-fields">
             <div class="field"><label class="field-label">Est. Hours</label><input type="number" step="0.5" placeholder="e.g. 2" value="${room.hours}" oninput="setRoomVal(${room.id},'hours',this.value)"></div>
             <div class="field"><label class="field-label">Crew Size</label><input type="number" placeholder="e.g. 2" value="${room.crew}" oninput="setRoomVal(${room.id},'crew',this.value)"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">Items Being Moved <span class="field-hint">individual items to move</span></label>
+            <textarea rows="2" placeholder="e.g. Queen bed frame, dresser, nightstands, armchair" oninput="setRoomVal(${room.id},'movedItems',this.value)">${room.movedItems||''}</textarea>
           </div>
           <div class="field">
             <label class="field-label">Special / Notable Items</label>
@@ -1966,6 +1970,7 @@
         if (r.volume) parts.push(r.volume + ' volume');
         if (r.hours && r.crew) parts.push(`~${r.hours}hrs × ${r.crew} crew`);
         plan += `  ${parts.join(' — ')}`;
+        if (r.movedItems) plan += `\n    Moving: ${r.movedItems}`;
         if (r.specialItems) plan += `\n    Special: ${r.specialItems}`;
         if (r.keepItems) plan += `\n    Keepsakes: ${r.keepItems}`;
         if (r.notes) plan += `\n    Note: ${r.notes}`;
@@ -2067,6 +2072,7 @@
     d.rooms.forEach(r => {
       const disp = Array.isArray(r.disposition) ? r.disposition : (r.disposition ? [r.disposition] : []);
       prompt += `- ${r.type}${disp.length ? ' [' + disp.join(', ') + ']' : ''}: ${r.volume || 'unspecified'} volume`;
+      if (r.movedItems) prompt += ` | Moving: ${r.movedItems}`;
       if (r.specialItems) prompt += ` | Special items: ${r.specialItems}`;
       if (r.keepItems) prompt += ` | Keepsakes: ${r.keepItems}`;
       if (r.notes) prompt += ` | Notes: ${r.notes}`;

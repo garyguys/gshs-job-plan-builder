@@ -1682,7 +1682,7 @@
     div.innerHTML = `
       <div class="contact-header">
         <span style="font-size:13px;font-weight:600;color:var(--text-light)">Contact ${idx + 1}</span>
-        <button class="delete-btn" onclick="removeContact(this)">Remove</button>
+        <button class="delete-btn" onclick="removeContact(this)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="inline-fields">
         <div class="field"><label class="field-label">Contact Name</label><input type="text" class="contact-name" placeholder="Name"></div>
@@ -1759,7 +1759,7 @@
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <button class="delete-btn" onclick="event.stopPropagation();removeRoom(${room.id})">Remove</button>
+            <button class="delete-btn" onclick="event.stopPropagation();removeRoom(${room.id})"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             <span class="room-expand">▼</span>
           </div>
         </div>
@@ -1854,7 +1854,7 @@
       <div class="card" style="margin-top:16px;border-left:4px solid var(--sage)">
         <div class="card-header">
           <div class="card-title">Phase ${i + 1}</div>
-          <button class="delete-btn" onclick="removePhase(${p.id})">Remove</button>
+          <button class="delete-btn" onclick="removePhase(${p.id})"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
         <div class="field">
           <label class="field-label">Phase Name</label>
@@ -2267,7 +2267,7 @@
             <div class="saved-item-detail">${entry.address || 'No address'} · ${dateStr}</div>
           </div>
           <div class="saved-item-actions">
-            <button class="saved-item-delete" onclick="deleteConsultation('${entry.id}', event)">Delete</button>
+            <button class="saved-item-delete" onclick="deleteConsultation('${entry.id}', event)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
         </div>`;
     }).join('');

@@ -2233,7 +2233,8 @@
   }
 
   function openClaude() {
-    window.open('https://claude.ai/new', '_blank');
+    // Use location.href so iOS universal links can intercept and open the Claude app
+    window.location.href = 'https://claude.ai/new';
   }
 
   function showToast(msg) {

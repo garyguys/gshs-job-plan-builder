@@ -1323,7 +1323,7 @@
     </div>
     <div class="tool-group">
       <button class="sketch-tool active" data-sketchtool="pen" onclick="setSketchTool('pen',this)">✏️</button>
-      <button class="sketch-tool" data-sketchtool="eraser" onclick="setSketchTool('eraser',this)">⌫</button>
+      <button class="sketch-tool" data-sketchtool="eraser" onclick="setSketchTool('eraser',this)" title="Eraser (double-tap pencil)"><svg width="17" height="17" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="7" width="12" height="8" rx="2" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.6"/><line x1="5.5" y1="7" x2="5.5" y2="15" stroke="currentColor" stroke-width="1.6"/><path d="M3 7L9 1.5L15.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="15" x2="13" y2="15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     </div>
     <div class="tool-group" id="sketchSizeGroup">
       <button class="sketch-tool size-btn" data-size="2" onclick="setSketchSize(2,this)"><div class="size-dot" style="width:5px;height:5px"></div></button>
@@ -1351,7 +1351,7 @@
       </div>
     </div>
     <div class="tool-group">
-      <button class="sketch-tool active" id="pencilOnlyBtn" onclick="togglePencilOnly(this)" title="Pencil only — tap to allow finger drawing">✏️ only</button>
+      <button class="sketch-tool active" id="pencilOnlyBtn" onclick="togglePencilOnly(this)" title="Pencil only — tap to allow finger drawing" style="font-size:16px">✏️</button>
     </div>
   </div>
   <div class="sketch-canvas-wrap" id="sketchCanvasWrap">
@@ -2420,10 +2420,20 @@
     pencilOnly = !pencilOnly;
     el.classList.toggle('active', pencilOnly);
     el.title = pencilOnly ? 'Pencil only — tap to allow finger drawing' : 'Finger drawing on — tap for pencil only';
-    el.textContent = pencilOnly ? '✏️ only' : '✋ on';
+    el.textContent = pencilOnly ? '✏️' : '✋';
   }
 
-  // Double-tap pen to toggle eraser
+  // Apple Pencil 2 hardware double-tap (flat-side tap) — fires button === 1 in Safari
+  document.addEventListener('pointerdown', function(e) {
+    if (e.pointerType === 'pen' && e.button === 1) {
+      if (document.getElementById('sketchOverlay').classList.contains('active')) {
+        const nextTool = sketchTool === 'eraser' ? 'pen' : 'eraser';
+        setSketchTool(nextTool, document.querySelector(`[data-sketchtool="${nextTool}"]`));
+      }
+    }
+  });
+
+  // Canvas double-tap fallback (two quick taps with pencil tip)
   let lastPenTap = { time: 0, x: 0, y: 0 };
 
   // Pointer events for drawing

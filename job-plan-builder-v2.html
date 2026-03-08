@@ -1350,6 +1350,9 @@
         <button class="sketch-tool" onclick="sketchAddPage()" title="Add page">+</button>
       </div>
     </div>
+    <div class="tool-group">
+      <button class="sketch-tool active" id="pencilOnlyBtn" onclick="togglePencilOnly(this)" title="Pencil only — tap to allow finger drawing">✏️ only</button>
+    </div>
   </div>
   <div class="sketch-canvas-wrap" id="sketchCanvasWrap">
     <canvas id="sketchCanvas" class="sketch-canvas"></canvas>
@@ -2409,9 +2412,21 @@
     }
   }
 
+  // Palm rejection — ignore touch when pencil-only mode is on
+  let pencilOnly = true;
+  function isPalmRejected(e) { return pencilOnly && e.pointerType === 'touch'; }
+
+  function togglePencilOnly(el) {
+    pencilOnly = !pencilOnly;
+    el.classList.toggle('active', pencilOnly);
+    el.title = pencilOnly ? 'Pencil only — tap to allow finger drawing' : 'Finger drawing on — tap for pencil only';
+    el.textContent = pencilOnly ? '✏️ only' : '✋ on';
+  }
+
   // Pointer events for drawing
   sketchCanvas.addEventListener('pointerdown', function(e) {
     e.preventDefault();
+    if (isPalmRejected(e)) return;
     const pos = sketchGetPos(e);
     if (sketchTool === 'eraser') {
       sketchErasing = true;
@@ -2426,6 +2441,7 @@
 
   sketchCanvas.addEventListener('pointermove', function(e) {
     e.preventDefault();
+    if (isPalmRejected(e)) return;
     if (sketchErasing) { sketchEraseAt(sketchGetPos(e)); return; }
     if (!sketchDrawing || !sketchCurrentStroke) return;
     const pos = sketchGetPos(e);
@@ -2453,6 +2469,7 @@
   });
 
   sketchCanvas.addEventListener('pointerup', function(e) {
+    if (isPalmRejected(e)) return;
     if (sketchErasing) { sketchErasing = false; scheduleSave(); return; }
     if (!sketchDrawing) return;
     sketchDrawing = false;
@@ -2465,6 +2482,7 @@
   });
 
   sketchCanvas.addEventListener('pointerleave', function(e) {
+    if (isPalmRejected(e)) return;
     if (sketchErasing) { sketchErasing = false; return; }
     if (!sketchDrawing) return;
     sketchDrawing = false;
@@ -2856,10 +2874,20 @@
   // Check session and init app on page load
   checkSession();
 
-  // Register service worker for PWA / offline support
+  // Register service worker for PWA / offline support + auto-updates
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW registration failed:', e));
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', function() {
+            if (this.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version ready — reload silently to activate it
+              window.location.reload();
+            }
+          });
+        });
+      }).catch(e => console.warn('SW registration failed:', e));
     });
   }
 </script>

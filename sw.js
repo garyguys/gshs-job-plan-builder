@@ -1,4 +1,4 @@
-const CACHE = 'gshs-app-v1';
+const CACHE = 'gshs-app-v2';
 const APP_SHELL = [
   './job-plan-builder-v2.html',
   './manifest.json',

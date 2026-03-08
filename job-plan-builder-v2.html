@@ -389,6 +389,42 @@
   .btn-sm { padding: 10px 16px; font-size: 14px; }
 
   /* Phase Cards */
+  .room-hours-ref {
+    background: var(--cream);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--accent);
+  }
+  .room-hours-ref-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+  }
+  .room-hours-ref-title {
+    font-size: 13px; font-weight: 600; color: var(--text-light);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .room-hours-ref-toggle {
+    font-size: 12px; color: var(--text-light);
+  }
+  .room-hours-ref-body { margin-top: 10px; }
+  .room-hours-ref-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
+  }
+  .room-hours-ref-row:last-child { border-bottom: none; }
+  .room-hours-ref-room { color: var(--text); font-weight: 500; }
+  .room-hours-ref-detail { color: var(--text-light); font-size: 13px; }
+  .room-hours-ref-total {
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1.5px solid var(--border);
+    display: flex; justify-content: space-between;
+    font-size: 14px; font-weight: 600; color: var(--text);
+  }
+
   .phase-card {
     background: var(--warm-white);
     border-radius: var(--radius);
@@ -1156,6 +1192,8 @@
       </div>
     </div>
 
+    <div id="roomHoursRef"></div>
+
     <div id="phasesContainer"></div>
 
     <button class="btn btn-primary btn-block" onclick="addPhase()" style="margin-top:16px">+ Add Phase</button>
@@ -1654,6 +1692,7 @@
     document.getElementById('prevBtn').style.display = step === 0 ? 'none' : '';
     document.getElementById('nextBtn').textContent = step === totalSteps - 1 ? '✓ Done' : 'Next →';
     if (step === 4) generateAllOutputs();
+    if (step === 2) renderRoomHoursRef();
     window.scrollTo(0, 0);
   }
 
@@ -1842,6 +1881,40 @@
   function setRoomVal(id, field, val) {
     const r = rooms.find(x => x.id === id);
     if (r) r[field] = val;
+    if (field === 'hours' || field === 'crew') renderRoomHoursRef();
+  }
+
+  // Room hours reference panel (shown in phases step)
+  let roomHoursRefOpen = true;
+  function renderRoomHoursRef() {
+    const el = document.getElementById('roomHoursRef');
+    if (!el) return;
+    const withHours = rooms.filter(r => parseFloat(r.hours) || parseInt(r.crew));
+    if (!withHours.length) { el.innerHTML = ''; return; }
+    const total = withHours.reduce((s, r) => s + (parseFloat(r.hours)||0) * (parseInt(r.crew)||0), 0);
+    const rows = withHours.map(r => {
+      const hrs = parseFloat(r.hours) || 0;
+      const crew = parseInt(r.crew) || 0;
+      const ph = hrs * crew;
+      const detail = crew && hrs ? `${crew} crew × ${hrs} hrs = ${ph} ph` : (hrs ? `${hrs} hrs` : `${crew} crew`);
+      return `<div class="room-hours-ref-row">
+        <span class="room-hours-ref-room">${r.type}</span>
+        <span class="room-hours-ref-detail">${detail}</span>
+      </div>`;
+    }).join('');
+    el.innerHTML = `<div class="room-hours-ref">
+      <div class="room-hours-ref-header" onclick="roomHoursRefOpen=!roomHoursRefOpen;renderRoomHoursRef()">
+        <span class="room-hours-ref-title">Walkthrough Hours Reference</span>
+        <span class="room-hours-ref-toggle">${roomHoursRefOpen ? '▲ Hide' : '▼ Show'}</span>
+      </div>
+      ${roomHoursRefOpen ? `<div class="room-hours-ref-body">
+        ${rows}
+        <div class="room-hours-ref-total">
+          <span>Total</span>
+          <span>${total} person-hours</span>
+        </div>
+      </div>` : ''}
+    </div>`;
   }
 
   // Phases

@@ -2423,11 +2423,30 @@
     el.textContent = pencilOnly ? '✏️ only' : '✋ on';
   }
 
+  // Double-tap pen to toggle eraser
+  let lastPenTap = { time: 0, x: 0, y: 0 };
+
   // Pointer events for drawing
   sketchCanvas.addEventListener('pointerdown', function(e) {
     e.preventDefault();
     if (isPalmRejected(e)) return;
     const pos = sketchGetPos(e);
+
+    // Detect double-tap from Apple Pencil
+    if (e.pointerType === 'pen') {
+      const now = Date.now();
+      const dt = now - lastPenTap.time;
+      const dist = Math.hypot(pos.x - lastPenTap.x, pos.y - lastPenTap.y);
+      if (dt < 350 && dist < 40) {
+        // Double-tap — toggle eraser/pen
+        const nextTool = sketchTool === 'eraser' ? 'pen' : 'eraser';
+        setSketchTool(nextTool, document.querySelector(`[data-sketchtool="${nextTool}"]`));
+        lastPenTap = { time: 0, x: 0, y: 0 };
+        return;
+      }
+      lastPenTap = { time: now, x: pos.x, y: pos.y };
+    }
+
     if (sketchTool === 'eraser') {
       sketchErasing = true;
       sketchEraseAt(pos);

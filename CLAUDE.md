@@ -27,19 +27,23 @@ This tool streamlines steps 2-5. Data persistence is critical because the consul
 
 ## Tech Stack
 
-- **Framework:** React (move toward a proper component-based architecture)
-- **Target platform:** iOS (iPhone + iPad) via React Native or Capacitor (TBD — decide when transitioning to native)
-- **Current state:** Single-file HTML/CSS/JS prototype (v2). Needs to be restructured into a proper React project.
-- **Design system:** Open — no locked-in fonts or color palette yet. Current prototype uses sage green / cream / warm accent tones with DM Sans. Feel free to explore better options, but keep the overall feel warm, professional, and clean. Avoid overly corporate or generic AI aesthetics. The UI must be touch-friendly and optimized for iPad use during walkthroughs.
+- **Current state:** Single-file HTML/CSS/JS app (`job-plan-builder-v2.html`). Do not restructure unless explicitly asked.
+- **Hosted:** GitHub Pages — https://garyguys.github.io/gshs-job-plan-builder/
+- **GitHub repo:** https://github.com/garyguys/gshs-job-plan-builder (private)
+- **Cloud sync:** Supabase (email/password auth, `consultations` table with JSONB data column)
+- **Keep-alive:** GitHub Actions cron (`.github/workflows/keep-alive.yml`) pings Supabase every 5 days to prevent free-tier pause
+- **PWA:** Installable on iPad/iPhone via Safari → Share → Add to Home Screen. Auto-updates via service worker.
+- **Design system:** Sage green / cream / warm accent tones, DM Sans font. Touch-friendly, iPad-first.
+- **Future platform:** React Native or Capacitor for native iOS (TBD — do not restructure toward this yet)
 
 ## Current Priority
 
-**Refinements and feature buildout on the existing v2 functionality.** Do not restructure or re-architect unless specifically asked. Focus on making the tool more useful and polished within its current shape, then we will restructure for iOS later.
+**Refinements and feature buildout on the existing v2 functionality.** Do not restructure or re-architect unless specifically asked. Focus on making the tool more useful and polished within its current shape.
 
-## Core Features (Existing)
+## Core Features (Current State)
 
 ### Step 1: Client Information
-- Client name, address, home type, sq ft, destination, move timeline
+- Client name, address, home type, sq ft, destination type + address, move timeline
 - Multiple family/key contacts (name, relation, phone, email)
 - Realtor information and notes
 - General notes field
@@ -47,21 +51,19 @@ This tool streamlines steps 2-5. Data persistence is critical because the consul
 ### Step 2: Room-by-Room Walkthrough
 - Add rooms from a dropdown (living room, bedrooms, kitchen, garage, etc.)
 - Duplicate room types allowed (e.g. multiple bedrooms)
-- Per room: volume level (light/moderate/heavy/very heavy), estimated hours, crew size, special/notable items, keepsakes, and notes
+- Per room: volume level (light/moderate/heavy/very heavy), estimated hours, crew size, items being moved, special/notable items, keepsakes, notes
+- Room disposition tags (multi-select): Packing, Downsizing, Moving, Clear Out, Home Prep / Maintenance, Auction, Leave As-Is
+- Photo attachments per room (captured/uploaded, compressed to JPEG, stored as base64 in localStorage — stripped before cloud sync)
+- Sketch pad per room for handwritten notes (Apple Pencil optimized — see Sketch Pad section)
 - Rooms are collapsible cards
 
 ### Step 3: Services & Phases
 - Toggle grid for services required (sorting, packing, moving, unpacking, removal, donations, staging, auction, exterior, cleaning)
-- Add multiple phases of work, each with: name, optional date, description, estimated hours, crew size, truck & trailer toggle, and notes
+- **Walkthrough Hours Reference panel** — collapsible card above phases showing each room's crew × hours estimate and total person-hours, for reference when building phases
+- Add multiple phases of work, each with: name, optional date, description, estimated hours, crew size, truck & trailer toggle (with day count), and notes
 
 ### Step 4: Notes & Details
-- Toggleable standard client notes (on/off per job):
-  - "We recommend personally transporting any money, sensitive documents, and sentimental items for peace of mind."
-  - "Soft items can remain inside furniture — we'll wrap everything securely. We only ask that hard or loose items are removed."
-  - "We'll check in with you as needed during the process to confirm decisions, so nothing moves forward without your comfort and approval."
-  - "Our team is experienced, professional, and held to a high standard."
-  - "Items for auction will be transported to Urban Auctions. Urban Auctions fees are 30% per lot."
-  - "A MaxSold online auction may be suitable for this home given the volume and value of items."
+- Toggleable standard client notes (on/off per job)
 - Custom notes field
 - Auction recommendation (Urban Auctions, MaxSold, both, or not recommended)
 - Personal touches for email generation: recipient name, consultation details, personal notes/tone cues
@@ -69,37 +71,73 @@ This tool streamlines steps 2-5. Data persistence is critical because the consul
 ### Step 5: Review & Export
 Three output tabs:
 1. **Job Plan** — structured text summary, copyable
-2. **Estimate Summary** — person-hours breakdown per phase with cost calculations, copyable
-3. **Email via Claude** — generates a detailed prompt containing all job data, writing style instructions, and personal touches. User copies the prompt, opens Claude.ai, pastes it, and Claude (Opus 4.6) writes the full client-facing email.
+2. **Estimate Summary** — walkthrough assessment by room + phased schedule breakdown, person-hours and cost calculations, copyable
+3. **Email via Claude** — generates a detailed prompt. User copies it, taps "Open Claude →" (opens Claude app via universal link), pastes, and Claude writes the client email.
+
+**Person-hours calculation logic:**
+- `roomPersonHours` = sum of (room.hours × room.crew) across all rooms
+- `phasePersonHours` = sum of (phase.hours × phase.crew) across all phases
+- `totalPersonHours` = phasePersonHours if phases have data, otherwise roomPersonHours
+- Both values shown in stat cards when both are present
+
+## Sketch Pad
+
+Each room has a full-screen sketch overlay for handwritten notes with Apple Pencil.
+
+**Key implementation details:**
+- Canvas is 3.5× the viewport height — finger-scrollable to access the full length
+- `touch-action: none` on canvas; finger scrolling is handled manually in JS (pointerdown stores scrollTop, pointermove applies delta) so pen events are never intercepted as scroll gestures
+- Palm rejection: `pencilOnly = true` by default (✏️ button in toolbar). Fingers scroll, pen draws. Toggle to ✋ to allow finger drawing.
+- Apple Pencil hardware double-tap (button === 1) toggles eraser
+- Drawing uses Catmull-Rom splines (cubic bezier) for smooth curves + 3px minimum distance threshold to filter micro-jitter
+- Orientation/resize: debounced `window.resize` listener rebuilds canvas and redraws strokes
+- Text selection fully blocked: `user-select: none` + `-webkit-touch-callout: none` on overlay and all children + `selectstart` document listener blocks all selection while overlay is active
+
+## Cloud Sync (Supabase)
+
+- Auth: email/password. Session persisted automatically by Supabase JS client.
+- `consultations` table: `id` (text PK), `user_id` (uuid → auth.users), `client_name`, `address`, `data` (jsonb), `created_at`, `updated_at`
+- Row Level Security: users can only read/write their own rows
+- Sync strategy: localStorage is primary. Supabase syncs in background. On load, pulls from Supabase and merges (most-recent `updated_at` wins). Works offline — syncs on reconnect.
+- Photos are stripped from cloud data before upload (too large). Photos are localStorage-only.
+- Keep-alive: `.github/workflows/keep-alive.yml` runs `0 8 */5 * *` cron, pings Supabase REST API, exits 1 if HTTP ≥ 400
 
 ## Hard Rules — Do Not Change Without Explicit Instruction
 
 - **Rate structure:** $90/hour per person + 8% supplies fee + 5% GST
 - **Truck & trailer:** $65/day flat rate (added per phase/day of usage)
 - **Urban Auctions fee:** 30% per lot
-- **Email generation workflow:** Currently uses a copy-prompt-to-Claude approach (no API key). This may change in the future but do not add API key requirements without being asked.
+- **Email generation workflow:** Copy-prompt-to-Claude approach (no API key). Do not add API key requirements without being asked.
 - **Estimate lives in Wave:** The tool assists with estimating hours/costs but does not replace Wave for formal invoicing. Don't build invoice generation.
 
 ## Writing Style for Client Emails
 
-The Claude prompt generates emails that should match Garrett's real communication style:
-- **Warm but professional.** Not corporate, not overly casual.
-- **Reassuring and empathetic.** Families are managing a major life transition for a loved one.
-- **Clear, plain language.** No jargon.
-- **Phased structure** as the backbone, with natural paragraph flow — not excessive bullet points.
-- **Practical details** (times, team sizes, logistics) woven naturally into descriptions.
-- **Personal touches** in the opening (reference the consultation visit, family members met, personal details).
-- **Closes with** an invitation to ask questions or make adjustments.
-- **Signs off as** Garrett from Get Started Home Services.
-- **Does not include dollar amounts** in the email body — the attached estimate covers pricing.
+The Claude prompt generates emails matching Garrett's communication style:
+- Warm but professional. Not corporate, not overly casual.
+- Reassuring and empathetic — families managing a major life transition for a loved one.
+- Clear, plain language. No jargon.
+- Phased structure as the backbone, natural paragraph flow — not excessive bullet points.
+- Practical details (times, team sizes, logistics) woven naturally into descriptions.
+- Personal touches in the opening (reference the consultation visit, family members met, personal details).
+- Closes with an invitation to ask questions or make adjustments.
+- Signs off as Garrett from Get Started Home Services.
+- Does not include dollar amounts in the email body — the attached estimate covers pricing.
 
-## Planned Future Features
+## Known Issues / Things to Revisit
 
-- **Data persistence / saved consultations:** Ability to save, load, and edit past consultations on-device. This is a critical future feature — consultations need to persist across sessions.
-- **Photo attachment/reference:** Ability to attach or reference photos taken during the walkthrough, linked to specific rooms.
-- **API-powered email generation:** If the copy-to-Claude workflow proves clunky, may integrate Claude API directly with an API key for in-app email generation.
-- **iOS native app:** Package as a native iOS application for iPhone and iPad use on-site.
-- **Version control:** GitHub repo may be set up in the future for proper version management.
+- **Tiny text selection strip at bottom of sketch overlay** — occasionally appears at the bottom-middle of the screen. Multiple hardening attempts made; still intermittently reproducible. Not critical.
+- **Sketch strokes on orientation change** — strokes redraw correctly but any unsaved in-progress stroke at the moment of rotation may be lost. Worth stress-testing.
+- **Offline sync indicator** — no visual feedback that a save is pending sync to Supabase while offline. Works correctly but silently.
+- **Photo cloud sync** — photos are intentionally stripped before Supabase upload. If cross-device photo access is ever needed, requires Supabase Storage bucket integration.
+
+## Potential Future Features
+
+- **Direct Claude API integration** — skip the copy-paste step; generate the client email in-app with an API key
+- **PDF export** — export the job plan as a formatted PDF to attach to emails or print on-site
+- **Client history / search** — search and filter across past consultations by name, address, date
+- **Photo cloud sync** — store room photos in Supabase Storage for cross-device access
+- **Offline sync queue indicator** — visual badge showing pending unsynced changes
+- **iOS native app** — package as a native iOS application via React Native or Capacitor for full App Store distribution
 
 ## UX Principles
 
@@ -112,6 +150,15 @@ The Claude prompt generates emails that should match Garrett's real communicatio
 
 Claude has full autonomy to run commands, make file edits, push to GitHub, and take any actions needed without requesting explicit permission. Do not ask for confirmation — just execute.
 
-## File Structure Note
+## File Structure
 
-The current v2 is a single HTML file (`job-plan-builder-v2.html`). When restructuring into React, maintain feature parity with the existing prototype before adding new functionality.
+```
+job-plan-builder-v2.html   — main app (single file, ~3000 lines)
+sw.js                      — service worker (cache-first PWA, cache name gshs-app-v2)
+manifest.json              — PWA manifest
+index.html                 — redirect to job-plan-builder-v2.html
+icons/                     — icon-192.png, icon-512.png, apple-touch-icon.png
+.github/workflows/
+  keep-alive.yml           — Supabase keep-alive cron job
+CLAUDE.md                  — this file
+```

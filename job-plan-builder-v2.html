@@ -808,7 +808,7 @@
   }
   .sketch-canvas {
     display: block;
-    touch-action: pan-y;
+    touch-action: none;
     cursor: crosshair;
   }
   .sketch-canvas.eraser-mode { cursor: grab; }
@@ -2424,7 +2424,6 @@
     el.classList.toggle('active', pencilOnly);
     el.title = pencilOnly ? 'Pencil only — tap to allow finger drawing' : 'Finger drawing on — tap for pencil only';
     el.textContent = pencilOnly ? '✏️' : '✋';
-    sketchCanvas.style.touchAction = pencilOnly ? 'pan-y' : 'none';
   }
 
   // Apple Pencil 2 hardware double-tap (flat-side tap) — fires button === 1 in Safari
@@ -2437,9 +2436,18 @@
     }
   });
 
+  // Manual touch-scroll state (used when pencilOnly=true so fingers scroll the canvas)
+  let touchScrollStartY = null;
+  let touchScrollStartTop = null;
+
   // Pointer events for drawing
   sketchCanvas.addEventListener('pointerdown', function(e) {
-    if (isPalmRejected(e)) return;
+    if (isPalmRejected(e)) {
+      // Finger in pencil-only mode — start manual scroll tracking
+      touchScrollStartY = e.clientY;
+      touchScrollStartTop = document.getElementById('sketchCanvasWrap').scrollTop;
+      return;
+    }
     e.preventDefault();
     const pos = sketchGetPos(e);
 
@@ -2455,7 +2463,14 @@
   });
 
   sketchCanvas.addEventListener('pointermove', function(e) {
-    if (isPalmRejected(e)) return;
+    if (isPalmRejected(e)) {
+      // Finger in pencil-only mode — scroll the wrap manually
+      if (touchScrollStartY !== null) {
+        const wrap = document.getElementById('sketchCanvasWrap');
+        wrap.scrollTop = touchScrollStartTop - (e.clientY - touchScrollStartY);
+      }
+      return;
+    }
     e.preventDefault();
     if (sketchErasing) { sketchEraseAt(sketchGetPos(e)); return; }
     if (!sketchDrawing || !sketchCurrentStroke) return;
@@ -2484,7 +2499,11 @@
   });
 
   sketchCanvas.addEventListener('pointerup', function(e) {
-    if (isPalmRejected(e)) return;
+    if (isPalmRejected(e)) {
+      touchScrollStartY = null;
+      touchScrollStartTop = null;
+      return;
+    }
     if (sketchErasing) { sketchErasing = false; scheduleSave(); return; }
     if (!sketchDrawing) return;
     sketchDrawing = false;
@@ -2497,7 +2516,11 @@
   });
 
   sketchCanvas.addEventListener('pointerleave', function(e) {
-    if (isPalmRejected(e)) return;
+    if (isPalmRejected(e)) {
+      touchScrollStartY = null;
+      touchScrollStartTop = null;
+      return;
+    }
     if (sketchErasing) { sketchErasing = false; return; }
     if (!sketchDrawing) return;
     sketchDrawing = false;

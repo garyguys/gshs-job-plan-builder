@@ -711,6 +711,7 @@
     background: var(--cream);
     display: none; flex-direction: column;
     user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
   .sketch-overlay.active { display: flex; }
 
@@ -802,12 +803,12 @@
   .sketch-page-nav .sketch-tool { width: 36px; height: 36px; font-size: 14px; }
 
   .sketch-canvas-wrap {
-    flex: 1; overflow: hidden; position: relative;
-    background: white;
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    position: relative; background: white;
   }
   .sketch-canvas {
     display: block;
-    touch-action: none;
+    touch-action: pan-y;
     cursor: crosshair;
   }
   .sketch-canvas.eraser-mode { cursor: grab; }
@@ -2343,10 +2344,11 @@
     const wrap = document.getElementById('sketchCanvasWrap');
     const rect = wrap.getBoundingClientRect();
     sketchDPR = window.devicePixelRatio || 1;
+    const canvasH = rect.height * 3.5;
     sketchCanvas.width = rect.width * sketchDPR;
-    sketchCanvas.height = rect.height * sketchDPR;
+    sketchCanvas.height = canvasH * sketchDPR;
     sketchCanvas.style.width = rect.width + 'px';
-    sketchCanvas.style.height = rect.height + 'px';
+    sketchCanvas.style.height = canvasH + 'px';
     sketchCtx.scale(sketchDPR, sketchDPR);
   }
 
@@ -2422,6 +2424,7 @@
     el.classList.toggle('active', pencilOnly);
     el.title = pencilOnly ? 'Pencil only — tap to allow finger drawing' : 'Finger drawing on — tap for pencil only';
     el.textContent = pencilOnly ? '✏️' : '✋';
+    sketchCanvas.style.touchAction = pencilOnly ? 'pan-y' : 'none';
   }
 
   // Apple Pencil 2 hardware double-tap (flat-side tap) — fires button === 1 in Safari
@@ -2436,8 +2439,8 @@
 
   // Pointer events for drawing
   sketchCanvas.addEventListener('pointerdown', function(e) {
-    e.preventDefault();
     if (isPalmRejected(e)) return;
+    e.preventDefault();
     const pos = sketchGetPos(e);
 
     if (sketchTool === 'eraser') {
@@ -2452,8 +2455,8 @@
   });
 
   sketchCanvas.addEventListener('pointermove', function(e) {
-    e.preventDefault();
     if (isPalmRejected(e)) return;
+    e.preventDefault();
     if (sketchErasing) { sketchEraseAt(sketchGetPos(e)); return; }
     if (!sketchDrawing || !sketchCurrentStroke) return;
     const pos = sketchGetPos(e);
@@ -2503,6 +2506,22 @@
       getSketchPage().undone = [];
     }
     sketchCurrentStroke = null;
+  });
+
+  // Prevent text selection anywhere inside the sketch overlay
+  document.addEventListener('selectstart', function(e) {
+    if (e.target.closest('#sketchOverlay')) e.preventDefault();
+  });
+
+  // Resize / orientation change — rebuild canvas, preserve strokes
+  let sketchResizeTimer = null;
+  window.addEventListener('resize', function() {
+    if (!document.getElementById('sketchOverlay').classList.contains('active')) return;
+    clearTimeout(sketchResizeTimer);
+    sketchResizeTimer = setTimeout(function() {
+      setupSketchCanvas();
+      sketchRedraw();
+    }, 150);
   });
 
   // Sketch tool controls

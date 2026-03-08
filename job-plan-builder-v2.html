@@ -1947,7 +1947,9 @@
 
     data.totalHours = phases.reduce((s, p) => s + (parseFloat(p.hours) || 0), 0);
     data.maxCrew = phases.reduce((m, p) => Math.max(m, parseInt(p.crew) || 0), 0);
-    data.totalPersonHours = phases.reduce((s, p) => s + ((parseFloat(p.hours) || 0) * (parseInt(p.crew) || 0)), 0);
+    data.phasePersonHours = phases.reduce((s, p) => s + ((parseFloat(p.hours) || 0) * (parseInt(p.crew) || 0)), 0);
+    data.roomPersonHours = data.rooms.reduce((s, r) => s + ((parseFloat(r.hours) || 0) * (parseInt(r.crew) || 0)), 0);
+    data.totalPersonHours = data.phasePersonHours || data.roomPersonHours;
     data.totalTrailerDays = phases.reduce((s, p) => s + (p.includesTrailer ? (parseInt(p.trailerDays) || 1) : 0), 0);
     data.trailerCost = data.totalTrailerDays * 65;
 
@@ -1959,9 +1961,13 @@
     const d = gatherData();
 
     // Stats
+    const phLabel = d.phasePersonHours > 0 && d.roomPersonHours > 0
+      ? `Person-Hours (phases)`
+      : `Person-Hours`;
     document.getElementById('summaryStats').innerHTML = `
       <div class="stat-card"><div class="stat-value">${d.phases.length}</div><div class="stat-label">Phases</div></div>
-      <div class="stat-card"><div class="stat-value">${d.totalPersonHours}</div><div class="stat-label">Person-Hours</div></div>
+      <div class="stat-card"><div class="stat-value">${d.totalPersonHours}</div><div class="stat-label">${phLabel}</div></div>
+      ${d.phasePersonHours > 0 && d.roomPersonHours > 0 ? `<div class="stat-card"><div class="stat-value">${d.roomPersonHours}</div><div class="stat-label">Person-Hours (walkthrough)</div></div>` : ''}
       <div class="stat-card"><div class="stat-value">${d.rooms.length}</div><div class="stat-label">Rooms</div></div>`;
 
     // Job Plan
@@ -2029,6 +2035,20 @@
 
     // Estimate
     let est = `ESTIMATE SUMMARY\n${'─'.repeat(30)}\n\n`;
+
+    if (d.roomPersonHours > 0) {
+      est += `Walkthrough assessment (by room)\n`;
+      d.rooms.forEach(r => {
+        const rh = parseFloat(r.hours) || 0;
+        const rc = parseInt(r.crew) || 0;
+        if (!rh && !rc) return;
+        const rph = rh * rc;
+        est += `  ${r.type}: ${rc} people × ${rh} hrs = ${rph} person-hours\n`;
+      });
+      est += `  Subtotal: ${d.roomPersonHours} person-hours\n\n`;
+    }
+
+    if (d.phases.length > 0) est += `Phased schedule\n`;
     d.phases.forEach((p, i) => {
       const hrs = parseFloat(p.hours) || 0;
       const crew = parseInt(p.crew) || 0;

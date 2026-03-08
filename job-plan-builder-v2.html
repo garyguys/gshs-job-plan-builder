@@ -710,6 +710,7 @@
     position: fixed; inset: 0; z-index: 500;
     background: var(--cream);
     display: none; flex-direction: column;
+    user-select: none; -webkit-user-select: none;
   }
   .sketch-overlay.active { display: flex; }
 
@@ -1323,7 +1324,7 @@
     </div>
     <div class="tool-group">
       <button class="sketch-tool active" data-sketchtool="pen" onclick="setSketchTool('pen',this)">✏️</button>
-      <button class="sketch-tool" data-sketchtool="eraser" onclick="setSketchTool('eraser',this)" title="Eraser (double-tap pencil)"><svg width="17" height="17" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="7" width="12" height="8" rx="2" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.6"/><line x1="5.5" y1="7" x2="5.5" y2="15" stroke="currentColor" stroke-width="1.6"/><path d="M3 7L9 1.5L15.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="15" x2="13" y2="15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      <button class="sketch-tool" data-sketchtool="eraser" onclick="setSketchTool('eraser',this)" title="Eraser (double-tap pencil)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
     <div class="tool-group" id="sketchSizeGroup">
       <button class="sketch-tool size-btn" data-size="2" onclick="setSketchSize(2,this)"><div class="size-dot" style="width:5px;height:5px"></div></button>
